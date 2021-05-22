@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <link rel="stylesheet" href="assets/css/variables.css">
+  <link rel="stylesheet" href="assets/css/nativize.css">
+  <link rel="stylesheet" href="assets/css/global.css">
+  <link rel="stylesheet" href="assets/css/about.css">
+  <link rel="stylesheet" href="assets/css/nav.css">
+  <link rel="stylesheet" href="assets/css/section.css">
+  <link rel="stylesheet" href="assets/css/demo.css">
+  <link rel="stylesheet" href="assets/css/github.css">
+  <link rel="stylesheet" href="assets/css/add_question.css">
+  <link rel="stylesheet" href="assets/css/class_manage.css">
+  
+  <link rel="import" href="sections/manage_class.html">
+  <link rel="import" href="sections/add_question.html">
+</head>
+<body>
+  <nav class="nav js-nav">
+
+    <div class="nav-item u-category-menu">
+      <header class="nav-header">
+        <h1 class="nav-title">教师系统</h1>
+      </header>
+      <div class="nav-item nav-category-manageclass">
+        <button type="button" class="nav-button" data-section="class-manage">班级管理</button>
+      </div>
+      <div class="nav-item nav-category-manageclass">
+        <button type="button" class="nav-button" data-section="question-manage">发布题目</button>
+      </div>
+    </div>
+  </nav>
+  <main class="content js-content"></main>
+
+  <script>
+    require('./assets/imports')
+    // require('./assets/ex-links')
+    require('./assets/nav')
+    // require('./assets/demo-btns')
+    // require('./assets/code-blocks')
+    // require('./assets/normalize-shortcuts')
+  </script>
+</body>
+</html>
