@@ -5,6 +5,7 @@
   "description": "Electron interactive API demos",
   "main": "main.js",
   "bin": "cli.js",
+  "homepage": "./",
   "scripts": {
     "start": "electron .",
     "dev": "electron . --debug",
@@ -23,7 +24,7 @@
     "prepack": "check-for-leaks",
     "prepush": "check-for-leaks"
   },
-  "repository": "https://github.com/electron/electron-api-demos",
+  "repository": "https://github.com/blacksheep107/electron-teacher-system",
   "keywords": [
     "Electron",
     "API",
