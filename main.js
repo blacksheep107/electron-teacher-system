@@ -86,10 +86,10 @@ function makeSingleInstance () {
 }
 
 // Require each JS file in the main-process dir
-function loadDemos () {
-  const files = glob.sync(path.join(__dirname, 'main-process/**/*.js'))
-  files.forEach((file) => { require(file) })
-}
+// function loadDemos () {
+//   const files = glob.sync(path.join(__dirname, 'main-process/**/*.js'))
+//   files.forEach((file) => { require(file) })
+// }
 function requestAccessToken(){
   const url='https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET';
   http.open("GET",'https://www.baidu.com');

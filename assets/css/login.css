@@ -1,0 +1,24 @@
+.login-section{
+    width: 340px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    color: var(--color-subtle);
+    border-right: 1px solid var(--color-border);
+    /* background-color: var(--color-bg); */
+    display: block;
+}
+.login-section.is-hidden {
+    display: none;
+}
+.wrongpass{
+    display: none;
+    color: red;
+}
+.wrongpass.is-shown{
+    display: block;
+}
+.classBlock{
+    border: 1px solid red;
+    background-color: aquamarine;
+    
+}

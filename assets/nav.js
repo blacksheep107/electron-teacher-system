@@ -1,5 +1,4 @@
 const settings = require('electron-settings')
-
 document.body.addEventListener('click', (event) => {
   if (event.target.dataset.section) {
     handleSectionTrigger(event)

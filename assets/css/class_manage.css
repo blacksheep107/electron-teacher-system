@@ -9,4 +9,22 @@
   }
 .class-manage-section.is-shown {
     display: block;
-  }
+}
+.class-section{
+  width: 340px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  color: var(--color-subtle);
+  border-right: 1px solid var(--color-border);
+  /* background-color: var(--color-bg); */
+  display: none;
+}
+.class-section.is-shown{
+  display: block;
+}
+.addclass{
+  display: block;
+}
+.addclass.is-hidden{
+  display: none;
+}

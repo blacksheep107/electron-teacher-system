@@ -1,15 +1,13 @@
 <!-- 登录 -->
 <script src="login.js"></script>
 <template class="task-template">
-    <!-- <head>
-        <link rel="import" href="/sections/login/login.js">
-    </head> -->
     <view class="login-section js-section">
         <h1>登录</h1>
         <label for="id">输入id：</label>
-        <input id="id" />
+        <input type="text" id="id" />
         <label for="password">输入密码：</label>
-        <input id="password" />
+        <input type="text" id="password" />
         <button onclick="loginAction()">登录</button>
+        <p class="wrongpass">用户名或密码错误！</p>
     </view>
 </template>
