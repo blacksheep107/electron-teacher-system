@@ -9,4 +9,22 @@
   }
 .question-manage-section.is-shown {
     display: block;
-  }
+}
+.selectSingle{
+  display: none;
+}
+.selectSingle.is-shown{
+  display: block;
+}
+.selectMore{
+  display: none;
+}
+.selectMore.is-shown{
+  display: block;
+}
+.fillblank{
+  display: none;
+}
+.fillblank.is-shown{
+  display: block;
+}

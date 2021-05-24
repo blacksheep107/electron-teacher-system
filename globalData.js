@@ -3,4 +3,4 @@ data={
     teacherpassword:null,
     teacherclass:null,
 }
-module.exports.globalData=data
+module.exports=data

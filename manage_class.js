@@ -111,6 +111,8 @@ function addClass(){
     newblock.prepend(newbtn);
     newblock.prepend(newname);
     newblock.prepend(newid);
+    lData.teacherclass.push(newid);
+    globalData.classname.push(newname);
 }
 function addClassAction(){
     let newid=document.getElementById('newclassid').value;

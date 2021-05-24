@@ -1,9 +1,29 @@
 <template class="task-template">
     <view class="question-manage-section js-section" id="question-manage-section">
         <h1>添加题目</h1>
-        <form class="form">
-
-        </form>
+        <view class="form">
+            <view class="selectSingle">
+                <h2>添加单选题</h2>
+                <textarea id="selectquestion" placeholder="在此输入题目详情"></textarea>
+                <button class="addop" onclick="addRadioOption()">添加选项</button>
+                <div class="selectSingleB"></div>
+                <textarea id="selectanalysis" placeholder="在此输入解析"></textarea>
+            </view>
+            <view class="selectMore">
+                <h2>添加多选题</h2>
+                <textarea id="selectquestion2" placeholder="在此输入题目详情"></textarea>
+                <button class="addop" onclick="addMoreOption()">添加选项</button>
+                <div class="selectMoreB"></div>
+                <textarea id="selectanalysis2" placeholder="在此输入解析"></textarea>
+            </view>
+            <view class="fillblank">
+                <h2>添加填空题</h2>
+                <textarea id="fillquestion" placeholder="在此输入题目详情"></textarea>
+                <textarea id="fillanswer" placeholder="在此输入答案"></textarea>
+                <textarea id="selectanalysis3" placeholder="在此输入解析"></textarea>
+            </view>
+            <button class="submit" onclick="submit()">发布</button>
+        </view>
     </view>
 </template>
 <script src="./add_question.js"></script>
