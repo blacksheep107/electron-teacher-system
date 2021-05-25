@@ -3,12 +3,16 @@
 <template class="task-template">
     <view class="login-section js-section">
         <h1>登录</h1>
-        <label for="id">输入id：</label>
-        <input type="text" id="id" />
-        <label for="password">输入密码：</label>
-        <input type="text" id="password" />
-        <button onclick="loginAction()">登录</button>
+        <view class="idblock">
+            <label class="labelid" for="id">输入id：</label>
+            <input class="input" type="text" id="id" />            
+        </view>
+        <view class="idblock">
+            <label class="labelid" for="password">输入密码：</label>
+            <input class="input" type="text" id="password" />            
+        </view>
         <p class="wrongpass">用户名或密码错误！</p>
+        <button class="loginbtn" onclick="loginAction()">登录</button>
     </view>
     <!-- <view class="register-section js-section">
         <h1>注册</h1>

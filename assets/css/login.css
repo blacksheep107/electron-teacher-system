@@ -1,11 +1,7 @@
 .login-section{
-    width: 340px;
-    overflow-x: hidden;
-    overflow-y: auto;
     color: var(--color-subtle);
-    border-right: 1px solid var(--color-border);
-    /* background-color: var(--color-bg); */
-    display: block;
+    display: flex;
+    flex-direction: column;
 }
 .login-section.is-hidden {
     display: none;
@@ -18,7 +14,60 @@
     display: block;
 }
 .classBlock{
-    border: 1px solid red;
-    background-color: aquamarine;
-    
+    background-color: #4ca1a3;
+    color: white;
+    font-size: 20px;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 15px;
+    width: 150px;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+}
+.classBlock:hover{
+    background-color: white;
+    color: black;
+}
+.class-list{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    justify-items: center;
+    align-items: center;
+}
+.idblock{
+    margin-top: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: row;
+    font-size: 16px;
+}
+.labelid{
+    width: 80px;
+}
+.loginbtn{
+    background-color: whitesmoke;
+    color: black;
+    font-size: 16px;
+    border-radius: 5px;
+    padding: 5px;
+    margin: 15px;
+    width: 120px;
+    box-shadow: 0 6px 20px 0 rgba(0,0,0,0.2);
+    -webkit-transition-duration: 0.4s;
+    transition-duration: 0.4s;
+    border: 1px solid #4ca1a3;
+    margin-left: 100px;
+}
+.loginbtn:hover{
+    background-color: #4ca1a3;
+    color: white;
+}
+.input{
+    border: 1px solid #4ca1a3;
+    border-radius: 5px;
+    height: 30px;
+    justify-self: center;
+    align-self: center;
 }

@@ -1,10 +1,12 @@
-
+var dialog;
 var globalData;
 var typearr=['单选题','多选题','填空题'];
 var hardlevel=['易','中','难'];
-var count=0;
+var countsingle=0;
+var countmore=0;
 function onLoad(){
     var doc=document.querySelector('.form');
+    var selectblock=document.querySelector('.selectblock');
     // console.log(document.getElementsByTagName('select'));
     let sel=document.getElementsByTagName('select');
     if(sel.length>=3){
@@ -39,9 +41,10 @@ function onLoad(){
     for(let i=0;i<hardlevel.length;i++){
         selectLevel.innerHTML+=`<option>${hardlevel[i]}</option>`;
     }
-    doc.prepend(selectClass);
-    doc.prepend(selectType);
-    doc.prepend(selectLevel);
+    selectblock.prepend(selectClass);
+    selectblock.prepend(selectType);
+    selectblock.prepend(selectLevel);
+    hideAllForm();
     document.querySelector('.selectSingle').classList.add('is-shown');
     document.getElementById('selectType').addEventListener('change',function(e){
         console.log(e.target.value);
@@ -62,17 +65,24 @@ function onLoad(){
 }
 function addRadioOption(){
     let newRadio=document.createElement('div');
-    newRadio.innerHTML=`选项${String.fromCharCode(count+65)}. <input data-s=${String.fromCharCode(count+65)} name="radiocontent" placeholder="填入选项内容"></input> <input type="radio" name="radio"></input>`;
+    newRadio.classList.add('oneoption');
+    newRadio.innerHTML=`选项${String.fromCharCode(countsingle+65)}. <input class="opinput" data-s=${String.fromCharCode(countsingle+65)} name="radiocontent" placeholder="填入选项内容"></input> <input type="radio" name="radio"></input>`;
     let selectSingle=document.querySelector('.selectSingleB');
     selectSingle.appendChild(newRadio);
-    count++;
+    countsingle++;
+}
+function hideAllForm(){
+    document.querySelector('.selectSingle').classList.remove('is-shown');
+    document.querySelector('.selectMore').classList.remove('is-shown');
+    document.querySelector('.fillblank').classList.remove('is-shown');
 }
 function addMoreOption(){
     let newCheck=document.createElement('div');
-    newCheck.innerHTML=`选项${String.fromCharCode(count+65)}. <input data-c=${String.fromCharCode(count+65)} name="checkboxcontent" placeholder="填入选项内容"></input> <input type="checkbox" name="checkbox"></input>`;
+    newCheck.classList.add('oneoption');
+    newCheck.innerHTML=`选项${String.fromCharCode(countmore+65)}. <input class="opinput" data-c=${String.fromCharCode(countmore+65)} name="checkboxcontent" placeholder="填入选项内容"></input> <input type="checkbox" name="checkbox"></input>`;
     let selectMore=document.querySelector('.selectMoreB');
     selectMore.appendChild(newCheck);
-    count++;
+    countmore++;
 }
 function submit(){
     let type=document.getElementById('selectType').value;   // 选择填空
@@ -93,7 +103,7 @@ function submit(){
         for(let i=0;i<singlearr.length;i++){
             choosecontent.push({
                 "content":ansarr[i].value,
-                "value":'选项'+ansarr[i].dataset.s
+                "value":ansarr[i].dataset.s
             });
             if(singlearr[i].checked){
                 answer=ansarr[i].dataset.s;
@@ -127,6 +137,7 @@ function submit(){
     else if(selectLevel=='难')  level='hard';
     let qtype='choose';
     if(type=='填空题')  qtype='fillblank';
+    let isorder=document.getElementsByName('isOrderBtn')[0].checked;   // true按序
     let data={
         "analysis":analysis,
         "answer":type=='多选题'?answerarr:answer,
@@ -135,7 +146,8 @@ function submit(){
         "content":questionContent,
         "level":level,
         "type":qtype,
-        "classname":classname
+        "classname":classname,
+        "isorder":type=='多选题'?isorder:null
     }
     console.log(data);
     // 获取classid
@@ -189,8 +201,15 @@ function addQuestionTowx(data,classid){
                                 let res2=JSON.parse(addhttp.responseText);
                                 if(res2.errcode==0){
                                     // update ok
-                                    alert('添加成功！');
+                                    console.log('添加成功！');
+                                    // dialog=require('electron');
+                                    // dialog.showMessageBox({
+                                    //     title:'提示',
+                                    //     message:'添加成功',
+                                    //     buttons:["确定"]
+                                    // })
                                     clearWindow();
+                                    showAnime('添加成功！');
                                 }
                             }
                         }
@@ -212,4 +231,14 @@ function clearWindow(){
     while(children.hasChildNodes()) children.removeChild(children.firstChild);
     let c2=document.querySelector('.selectMoreB');
     while(c2.hasChildNodes()) c2.removeChild(c2.firstChild);
+    countmore=countsingle=0;
+}
+function showAnime(text){
+    let doc=document.querySelector('.content');
+    let block=document.createElement('div');
+    block.innerHTML=`<div class="tip">${text}</div>`;
+    doc.appendChild(block);
+    setTimeout(function(){
+        doc.removeChild(block);
+    },3000);
 }

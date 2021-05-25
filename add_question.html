@@ -2,19 +2,31 @@
     <view class="question-manage-section js-section" id="question-manage-section">
         <h1>添加题目</h1>
         <view class="form">
+            <div class="selectblock"></div>
             <view class="selectSingle">
-                <h2>添加单选题</h2>
-                <textarea id="selectquestion" placeholder="在此输入题目详情"></textarea>
-                <button class="addop" onclick="addRadioOption()">添加选项</button>
-                <div class="selectSingleB"></div>
-                <textarea id="selectanalysis" placeholder="在此输入解析"></textarea>
+                <div class="titleop">
+                    <h2>添加单选题</h2>
+                    <button class="addop" onclick="addRadioOption()">添加选项</button>                    
+                </div>
+                <div class="singleblock">
+                    <textarea id="selectquestion" placeholder="在此输入题目详情"></textarea>
+                    <div class="selectSingleB"></div>
+                    <textarea id="selectanalysis" placeholder="在此输入解析"></textarea>                    
+                </div>
+
             </view>
             <view class="selectMore">
-                <h2>添加多选题</h2>
+                <div class="titleop">
+                    <h2>添加多选题</h2>
+                    <button class="addop" onclick="addMoreOption()">添加选项</button>
+                </div>
                 <textarea id="selectquestion2" placeholder="在此输入题目详情"></textarea>
-                <button class="addop" onclick="addMoreOption()">添加选项</button>
                 <div class="selectMoreB"></div>
                 <textarea id="selectanalysis2" placeholder="在此输入解析"></textarea>
+                <div class="isOrder">
+                    <p>多选题答案是否按序？ </p>
+                    <input type="checkbox" name="isOrderBtn"></input>
+                </div>
             </view>
             <view class="fillblank">
                 <h2>添加填空题</h2>

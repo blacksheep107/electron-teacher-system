@@ -31,16 +31,13 @@ function getClassInfo(classid){
                     document.querySelector('.class-manage-section').classList.remove('is-shown');
                     let doc=document.querySelector('.class-section');
                     doc.classList.add('is-shown');
-                    let classidnode=document.createElement('div');
-                    classidnode.innerHTML='班级编号：'+info.classid;
-                    let classnamenode=document.createElement('div');
-                    classnamenode.innerHTML='班级名：'+info.classname;
-                    doc.appendChild(classidnode);
-                    doc.appendChild(classnamenode);
-                    let studentinfo=document.createElement('div');
-                    let stuattr=document.createAttribute('class');
-                    stuattr.value='studentinfo';
-                    studentinfo.setAttributeNode(stuattr);
+                    let classnode=document.createElement('div');
+                    classnode.innerHTML=`<div>班级编号：${info.classid}</div><div class="classname">班级名：${info.classname}</div>`
+                    classnode.classList.add('classinfo');
+                    doc.appendChild(classnode);
+                    let line=document.createElement('div');
+                    line.classList.add('line');
+                    doc.appendChild(line);
                     let stuarray=[];
                     new Promise((resolve,reject)=>{
                         for(let i=0;i<info.students.length;i++){
@@ -70,11 +67,17 @@ function getClassInfo(classid){
                             }
                         }
                     }).then(()=>{
-                        console.log(stuarray);
+                        stuarray.sort(function(a,b){
+                            return a.studentid<b.studentid;
+                        });
+                        let studentinfo=document.createElement('div');
+                        studentinfo.classList.add('studentinfo');
                         for(let i=0;i<stuarray.length;i++){
                             let newnode=document.createElement('div');
-                            newnode.innerHTML=stuarray[i].studentid+'  '+stuarray[i].name+' '+'已完成题目数：'+stuarray[i].answeredquestions.length;
+                            newnode.classList.add('onestudent');
+                            newnode.innerHTML= `<p>${stuarray[i].studentid}</p><p>${stuarray[i].name}</p><p>已完成题目数：</p><p>${stuarray[i].answeredquestions.length}</p>`;
                             studentinfo.appendChild(newnode);
+                            console.log(newnode);
                         }
                         doc.appendChild(studentinfo);                        
                     })
@@ -101,73 +104,96 @@ function getStudentInfo(id){
 }
 function addClass(){
     let newblock=document.querySelector('.addclass');
+    newblock.classList.remove('is-hidden');
+    while(newblock.hasChildNodes()) newblock.removeChild(newblock.firstChild);
     let newid=document.createElement('div');
+    let attr=document.createAttribute('class');
+    attr.value='ainput';
+    newid.setAttributeNode(attr);
     newid.innerHTML='<label for=\'newclassid\'>新班级编号：</label><input id=\'newclassid\'>';
     let newname=document.createElement('div');
+    let attr2=document.createAttribute('class');
+    attr2.value='ainput';
+    newname.setAttributeNode(attr2);
     newname.innerHTML='<label for=\'newclassname\'>新班级名字：</label><input id=\'newclassname\'>';
     let newbtn=document.createElement('div');
-    newbtn.innerHTML='<button onclick=addClassAction()>添加</button>'
+    newbtn.innerHTML='<button class="addbtn" onclick=addClassAction()>添加</button>'
     const doc=document.querySelector('.class-section');
     newblock.prepend(newbtn);
     newblock.prepend(newname);
     newblock.prepend(newid);
-    lData.teacherclass.push(newid);
-    globalData.classname.push(newname);
+    globalData.teacherclass.push({
+        'classid':newid,
+        'classname':newname
+    });
 }
 function addClassAction(){
     let newid=document.getElementById('newclassid').value;
     let newname=document.getElementById('newclassname').value;
     // add record in class
-    const addhttp=new XMLHttpRequest();
-    addhttp.open('POST',`https://api.weixin.qq.com/tcb/databaseadd?access_token=${ACCESS_TOKEN}`);
-    let data={
-        "env":"fzuanswersystem-7g3gmzjw761ecfdb",
-        "query":`db.collection(\"class\").add({data:${JSON.stringify({
-            classid:newid,
-            classname:newname,
-            teacherid:globalData.teacherid,
-            questions:[],
-            students:[]
-        })}})`
+    if(!ACCESS_TOKEN){
+        const http=new XMLHttpRequest();
+        const APPID='wx53d4c253e80f5250';
+        const APPSECRET='99bfb8dd8bf3736bf4cd0103722b8fbc';
+        http.open("GET",`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${APPID}&secret=${APPSECRET}`);
+        http.send();
+        http.onreadystatechange=e=>{
+            if(http.readyState==4){
+                ACCESS_TOKEN=JSON.parse(http.responseText).access_token;
+                const addhttp=new XMLHttpRequest();
+                addhttp.open('POST',`https://api.weixin.qq.com/tcb/databaseadd?access_token=${ACCESS_TOKEN}`);
+                let data={
+                    "env":"fzuanswersystem-7g3gmzjw761ecfdb",
+                    "query":`db.collection(\"class\").add({data:${JSON.stringify({
+                        classid:newid,
+                        classname:newname,
+                        teacherid:globalData.teacherid,
+                        questions:[],
+                        students:[]
+                    })}})`
+                }
+                addhttp.send(JSON.stringify(data));
+                new Promise(resolve=>{
+                    addhttp.onreadystatechange=e=>{
+                        console.log(addhttp.responseText);
+                        if(addhttp.readyState==4){
+                            let res=addhttp.responseText;
+                            if(JSON.parse(res).errcode==0){
+                                // add ok
+                                resolve();
+                            }
+                        }
+                    }        
+                }).then(()=>{
+                    const updatehttp=new XMLHttpRequest();
+                    updatehttp.open('POST',`https://api.weixin.qq.com/tcb/databaseupdate?access_token=${ACCESS_TOKEN}`);
+                    let newdata={
+                        "classid":newid,
+                        "classname":newname
+                    }
+                    data={
+                        "env":"fzuanswersystem-7g3gmzjw761ecfdb",
+                        "query":`db.collection(\"teacher\").where({id:'${globalData.teacherid}'}).update({data:{class: db.command.push(${JSON.stringify(newdata)})}})`
+                    }
+                    updatehttp.send(JSON.stringify(data));
+                    updatehttp.onreadystatechange=e=>{
+                        if(updatehttp.readyState==4){
+                            let res=JSON.parse(updatehttp.responseText);
+                            console.log(res);
+                            if(res.errcode==0&&res.modified>0){
+                                // 添加成功
+                                document.querySelector('.addclass').classList.add('is-hidden');
+                                let classlist=document.querySelector('.class-list');
+                                let newclassdiv=document.createElement('div');
+                                newclassdiv.innerHTML=`<button class="classBlock" onclick="getClassInfo(${newid})">${newname}</button>`
+                                classlist.appendChild(newclassdiv);
+                                alert('添加成功！');
+                            }
+                        }
+                    }
+                })
+            }
+        }
     }
-    addhttp.send(JSON.stringify(data));
-    new Promise(resolve=>{
-        addhttp.onreadystatechange=e=>{
-            if(addhttp.readyState==4){
-                let res=addhttp.responseText;
-                if(JSON.parse(res).errcode==0){
-                    // add ok
-                    resolve();
-                }
-            }
-        }        
-    }).then(()=>{
-        const updatehttp=new XMLHttpRequest();
-        updatehttp.open('POST',`https://api.weixin.qq.com/tcb/databaseupdate?access_token=${ACCESS_TOKEN}`);
-        let newdata={
-            "classid":newid,
-            "classname":newname
-        }
-        data={
-            "env":"fzuanswersystem-7g3gmzjw761ecfdb",
-            "query":`db.collection(\"teacher\").where({id:'${globalData.teacherid}'}).update({data:{class: db.command.push(${JSON.stringify(newdata)})}})`
-        }
-        updatehttp.send(JSON.stringify(data));
-        updatehttp.onreadystatechange=e=>{
-            if(updatehttp.readyState==4){
-                let res=JSON.parse(updatehttp.responseText);
-                console.log(res);
-                if(res.errcode==0&&res.modified>0){
-                    // 添加成功
-                    document.querySelector('.addclass').classList.add('is-hidden');
-                    let classlist=document.querySelector('.class-list');
-                    let newclassdiv=document.createElement('div');
-                    newclassdiv.innerHTML=`<button class="classBlock" onclick="getClassInfo(${newid})">${newname}</button>`
-                    classlist.appendChild(newclassdiv);
-                    alert('添加成功！');
-                }
-            }
-        }
-    })
 
 }

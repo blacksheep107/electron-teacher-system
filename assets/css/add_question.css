@@ -1,10 +1,5 @@
 .question-manage-section {
-    width: 340px;
-    overflow-x: hidden;
-    overflow-y: auto;
     color: var(--color-subtle);
-    border-right: 1px solid var(--color-border);
-    /* background-color: var(--color-bg); */
     display: none;
   }
 .question-manage-section.is-shown {
@@ -27,4 +22,105 @@
 }
 .fillblank.is-shown{
   display: block;
+}
+.form{
+  margin-top: 20px;
+}
+.selectblock{
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  height: 30px;
+}
+#selectLevel,
+#selectType,
+#selectClass{
+  border-radius: 6px;
+  /* padding: 8px; */
+  background: aliceblue;
+  width: 180px;
+  font-size: 16px;
+  /* font-weight: 600; */
+  text-align-last: center;
+  height: 36px;
+}
+textarea{
+  border-radius: 5px;
+  width: 500px;
+  height: 100px;
+  font-size: 16px;
+  padding: 6px;
+  border: 1px solid green;
+}
+.addop{
+  background-color: white;
+  color: black;
+  font-size: 16px;
+  border-radius: 5px;
+  /* padding: 5px; */
+  /* margin: 15px; */
+  width: 150px;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.2);
+  -webkit-transition-duration: 0.4s;
+  transition-duration: 0.4s;
+  border: 1px solid #4ca1a3;
+  margin-left: 260px;
+  height: 30px;
+}
+.addop:hover{
+  background-color: #4ca1a3; /* Green */
+  color: white;
+}
+.titleop{
+  display: flex;
+  flex-direction: row;
+}
+.submit{
+  margin-top: 16px;
+  background-color: white;
+  color: black;
+  font-size: 16px;
+  border-radius: 5px;
+  padding: 5px;
+  /* margin: 15px; */
+  width: 150px;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.2);
+  -webkit-transition-duration: 0.4s;
+  transition-duration: 0.4s;
+  border: 1px solid #4ca1a3;
+  margin-left: 350px;
+}
+.submit:hover{
+  background-color: #4ca1a3; /* Green */
+  color: white;
+}
+.oneoption{
+  margin-bottom: 10px;
+  margin-top: 10px;
+  font-size: 16px;
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  background-color: aliceblue;
+  width: 500px;
+  padding: 10px;
+  border-radius: 10px;
+  justify-content: space-evenly;
+}
+.opinput{
+  width: 300px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px;
+  padding: 10px;
+}
+.tip{
+  color: red;
+  font-size: 16px;
+}
+.isOrder{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
