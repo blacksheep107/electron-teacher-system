@@ -8,42 +8,39 @@ function onLoad(){
     var doc=document.querySelector('.form');
     var selectblock=document.querySelector('.selectblock');
     // console.log(document.getElementsByTagName('select'));
-    let sel=document.getElementsByTagName('select');
-    if(sel.length>=3){
-        for(let i=0;i<3;i++){
-            doc.removeChild(doc.firstChild);
-        }
-    }
     globalData=require('./globalData');
     console.log(globalData);
     // 添加下拉框
-    let selectClass=document.createElement('select');
-    selectClass.innerHTML='';
-    let attr=document.createAttribute('id');
-    attr.value='selectClass';
-    selectClass.setAttributeNode(attr);
-    for(let i=0;i<globalData.teacherclass.length;i++){
-        selectClass.innerHTML+=`<option>${globalData.teacherclass[i].classname}</option>`;
+    if(!document.querySelector('select')){
+        let selectClass=document.createElement('select');
+        selectClass.innerHTML='';
+        let attr=document.createAttribute('id');
+        attr.value='selectClass';
+        selectClass.setAttributeNode(attr);
+        for(let i=0;i<globalData.teacherclass.length;i++){
+            selectClass.innerHTML+=`<option>${globalData.teacherclass[i].classname}</option>`;
+        }
+        let selectType=document.createElement('select');
+        let typeattr=document.createAttribute('id');
+        typeattr.value='selectType';
+        selectType.setAttributeNode(typeattr);
+        selectType.innerHTML='';
+        for(let i=0;i<typearr.length;i++){
+            selectType.innerHTML+=`<option>${typearr[i]}</option>`;
+        }
+        let selectLevel=document.createElement('select');
+        let attr2=document.createAttribute('id');
+        attr2.value='selectLevel';
+        selectLevel.setAttributeNode(attr2);
+        selectLevel.innerHTML='';
+        for(let i=0;i<hardlevel.length;i++){
+            selectLevel.innerHTML+=`<option>${hardlevel[i]}</option>`;
+        }
+        selectblock.prepend(selectClass);
+        selectblock.prepend(selectType);
+        selectblock.prepend(selectLevel);        
     }
-    let selectType=document.createElement('select');
-    let typeattr=document.createAttribute('id');
-    typeattr.value='selectType';
-    selectType.setAttributeNode(typeattr);
-    selectType.innerHTML='';
-    for(let i=0;i<typearr.length;i++){
-        selectType.innerHTML+=`<option>${typearr[i]}</option>`;
-    }
-    let selectLevel=document.createElement('select');
-    let attr2=document.createAttribute('id');
-    attr2.value='selectLevel';
-    selectLevel.setAttributeNode(attr2);
-    selectLevel.innerHTML='';
-    for(let i=0;i<hardlevel.length;i++){
-        selectLevel.innerHTML+=`<option>${hardlevel[i]}</option>`;
-    }
-    selectblock.prepend(selectClass);
-    selectblock.prepend(selectType);
-    selectblock.prepend(selectLevel);
+
     hideAllForm();
     document.querySelector('.selectSingle').classList.add('is-shown');
     document.getElementById('selectType').addEventListener('change',function(e){

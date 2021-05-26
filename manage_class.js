@@ -18,6 +18,7 @@ function getClassInfo(classid){
             ACCESS_TOKEN=JSON.parse(http.responseText).access_token;
             console.log(ACCESS_TOKEN);
             var ht=new XMLHttpRequest();
+            console.log(classid);
             ht.open('POST',`https://api.weixin.qq.com/tcb/databasequery?access_token=${ACCESS_TOKEN}`,true);
             let data={
                 "env":"fzuanswersystem-7g3gmzjw761ecfdb",
@@ -26,6 +27,7 @@ function getClassInfo(classid){
             ht.send(JSON.stringify(data));
             ht.onreadystatechange=e=>{
                 if(ht.readyState==4){
+                    // console.log(JSON.parse(JSON.parse(ht.responseText).data));
                     let info=JSON.parse(JSON.parse(ht.responseText).data);
                     console.log(info);
                     document.querySelector('.class-manage-section').classList.remove('is-shown');
@@ -122,10 +124,6 @@ function addClass(){
     newblock.prepend(newbtn);
     newblock.prepend(newname);
     newblock.prepend(newid);
-    globalData.teacherclass.push({
-        'classid':newid,
-        'classname':newname
-    });
 }
 function addClassAction(){
     let newid=document.getElementById('newclassid').value;
@@ -187,13 +185,83 @@ function addClassAction(){
                                 let newclassdiv=document.createElement('div');
                                 newclassdiv.innerHTML=`<button class="classBlock" onclick="getClassInfo(${newid})">${newname}</button>`
                                 classlist.appendChild(newclassdiv);
-                                alert('添加成功！');
+                                globalData.teacherclass.push({
+                                    'classid':newid,
+                                    'classname':newname
+                                });
+                                showAnime('添加成功！');
                             }
                         }
                     }
                 })
             }
         }
+    }else{
+        const addhttp=new XMLHttpRequest();
+        addhttp.open('POST',`https://api.weixin.qq.com/tcb/databaseadd?access_token=${ACCESS_TOKEN}`);
+        let data={
+            "env":"fzuanswersystem-7g3gmzjw761ecfdb",
+            "query":`db.collection(\"class\").add({data:${JSON.stringify({
+                classid:newid,
+                classname:newname,
+                teacherid:globalData.teacherid,
+                questions:[],
+                students:[]
+            })}})`
+        }
+        addhttp.send(JSON.stringify(data));
+        new Promise(resolve=>{
+            addhttp.onreadystatechange=e=>{
+                console.log(addhttp.responseText);
+                if(addhttp.readyState==4){
+                    let res=addhttp.responseText;
+                    if(JSON.parse(res).errcode==0){
+                        // add ok
+                        resolve();
+                    }
+                }
+            }        
+        }).then(()=>{
+            const updatehttp=new XMLHttpRequest();
+            updatehttp.open('POST',`https://api.weixin.qq.com/tcb/databaseupdate?access_token=${ACCESS_TOKEN}`);
+            let newdata={
+                "classid":newid,
+                "classname":newname
+            }
+            data={
+                "env":"fzuanswersystem-7g3gmzjw761ecfdb",
+                "query":`db.collection(\"teacher\").where({id:'${globalData.teacherid}'}).update({data:{class: db.command.push(${JSON.stringify(newdata)})}})`
+            }
+            updatehttp.send(JSON.stringify(data));
+            updatehttp.onreadystatechange=e=>{
+                if(updatehttp.readyState==4){
+                    let res=JSON.parse(updatehttp.responseText);
+                    console.log(res);
+                    if(res.errcode==0&&res.modified>0){
+                        // 添加成功
+                        document.querySelector('.addclass').classList.add('is-hidden');
+                        let classlist=document.querySelector('.class-list');
+                        let newclassdiv=document.createElement('div');
+                        newclassdiv.innerHTML=`<button class="classBlock" onclick="getClassInfo(${newid})">${newname}</button>`
+                        classlist.appendChild(newclassdiv);
+                        globalData.teacherclass.push({
+                            'classid':newid,
+                            'classname':newname
+                        });
+                        showAnime('添加成功！');
+                    }
+                }
+            }
+        })
     }
 
+}
+function showAnime(text){
+    let doc=document.querySelector('.content');
+    let block=document.createElement('div');
+    block.innerHTML=`<div class="tip">${text}</div>`;
+    doc.appendChild(block);
+    setTimeout(function(){
+        doc.removeChild(block);
+    },3000);
 }

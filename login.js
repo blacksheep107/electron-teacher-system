@@ -64,3 +64,7 @@ function requestwxData(id,password){
         }
     }
 }
+function jumpRegister(){
+    document.querySelector('.login-section').classList.add('is-hidden');
+    
+}
