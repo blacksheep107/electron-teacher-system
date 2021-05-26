@@ -112,10 +112,11 @@ function submit(){
         let singlearr=document.getElementsByName('checkbox');
         let ansarr=document.getElementsByName('checkboxcontent');
         choosenum=0;
+        console.log(ansarr);
         for(let i=0;i<singlearr.length;i++){
             choosecontent.push({
                 "content":ansarr[i].value,
-                "value":'选项'+ansarr[i].dataset.c
+                "value":ansarr[i].dataset.c
             });
             if(singlearr[i].checked){
                 answerarr.push(ansarr[i].dataset.c);
