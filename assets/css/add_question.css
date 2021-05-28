@@ -30,7 +30,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr 2fr;
   margin-top: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 40px;
   height: 30px;
 }
 #selectLevel,
@@ -38,12 +38,14 @@
 #selectClass{
   border-radius: 6px;
   /* padding: 8px; */
-  background: aliceblue;
+  background: #87a7b3;
   width: 180px;
   font-size: 16px;
   /* font-weight: 600; */
   text-align-last: center;
   height: 36px;
+  color: white;
+  box-shadow: 5px 5px 7px #c0c0c0;
 }
 textarea{
   border-radius: 5px;
@@ -102,7 +104,7 @@ textarea{
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
-  background-color: aliceblue;
+  background-color: #d8ebe4;
   width: 500px;
   padding: 10px;
   border-radius: 10px;

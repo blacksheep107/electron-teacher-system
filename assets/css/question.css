@@ -1,0 +1,6 @@
+.question-section{
+    display: none;
+}
+.question-section.is-shown{
+    display: block;
+}

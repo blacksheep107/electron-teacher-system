@@ -1,5 +1,4 @@
 var globalData=require('./globalData');
-console.log(globalData);
 var ACCESS_TOKEN;
 function getClassInfo(classid){
     // 清空
@@ -16,9 +15,9 @@ function getClassInfo(classid){
     http.onreadystatechange=e=>{
         if(http.readyState==4){
             ACCESS_TOKEN=JSON.parse(http.responseText).access_token;
-            console.log(ACCESS_TOKEN);
+            // console.log(ACCESS_TOKEN);
             var ht=new XMLHttpRequest();
-            console.log(classid);
+            // console.log(classid);
             ht.open('POST',`https://api.weixin.qq.com/tcb/databasequery?access_token=${ACCESS_TOKEN}`,true);
             let data={
                 "env":"fzuanswersystem-7g3gmzjw761ecfdb",
@@ -34,7 +33,7 @@ function getClassInfo(classid){
                     let doc=document.querySelector('.class-section');
                     doc.classList.add('is-shown');
                     let classnode=document.createElement('div');
-                    classnode.innerHTML=`<div>班级编号：${info.classid}</div><div class="classname">班级名：${info.classname}</div>`
+                    classnode.innerHTML=`<div class="classid">班级编号：${info.classid}</div><div class="classname">班级名：${info.classname}</div>`
                     classnode.classList.add('classinfo');
                     doc.appendChild(classnode);
                     let line=document.createElement('div');
@@ -56,12 +55,9 @@ function getClassInfo(classid){
                             }
                             stuhttp.send(JSON.stringify(data));
                             stuhttp.onreadystatechange=e=>{
-                                // console.log(stuhttp.responseText);
                                 if(stuhttp.readyState==4){
                                     let stinfo=JSON.parse(JSON.parse(stuhttp.responseText).data[0]);
-                                    // console.log(stinfo);
                                     stuarray.push(stinfo);
-                                    // console.log(stuarray);
                                     if(i==info.students.length-1){
                                         resolve();
                                     }                                    
@@ -74,6 +70,7 @@ function getClassInfo(classid){
                         });
                         let studentinfo=document.createElement('div');
                         studentinfo.classList.add('studentinfo');
+                        console.log(stuarray);
                         for(let i=0;i<stuarray.length;i++){
                             let newnode=document.createElement('div');
                             newnode.classList.add('onestudent');
@@ -147,7 +144,8 @@ function addClassAction(){
                         classname:newname,
                         teacherid:globalData.teacherid,
                         questions:[],
-                        students:[]
+                        students:[],
+                        homeword:{},
                     })}})`
                 }
                 addhttp.send(JSON.stringify(data));
@@ -264,4 +262,74 @@ function showAnime(text){
     setTimeout(function(){
         doc.removeChild(block);
     },3000);
+}
+function jmpToQuestion(){
+    // 跳转查看题目页面
+    hideAllSectionsAndDeselectButtons();
+    document.querySelector('.question-section').classList.add('is-shown');
+    // 传值
+    document.getElementById('question_title').innerHTML=document.querySelector('.classname').innerHTML;
+    loadUnitQuestions();
+}
+function loadUnitQuestions(){
+    // 显示几个单元
+    // console.log(globalData);
+    getAccess().then(()=>{
+        const getht=new XMLHttpRequest();
+        let classid=document.querySelector('.classid').innerHTML.substring(5);
+        // console.log(classid);
+        getht.open('POST',`https://api.weixin.qq.com/tcb/databasequery?access_token=${ACCESS_TOKEN}`,true);
+        let data={
+            "env":"fzuanswersystem-7g3gmzjw761ecfdb",
+            "query":`db.collection(\'class\').where({classid:'${classid}'}).limit(100).get()`
+        }
+        getht.send(JSON.stringify(data));
+        getht.onreadystatechange=e=>{
+            if(getht.readyState==4){
+                let info=JSON.parse(JSON.parse(getht.responseText).data).homework;
+                console.log(info);
+                let allUnits=document.querySelector('.allUnits');
+                Object.keys(info).forEach(function(i){
+                    console.log(info[i]);
+                    // info[i] 一个单元所有题目id
+                    for(let j=0;j<info[i].length;j++){
+                        getQuestion(info[i][j]);
+                    }
+                    let newnode=document.createElement('div');
+                    newnode.innerHTML=`<p>${info[i].key}</p>`
+                })
+            }
+        }
+    })
+}
+function getQuestion(id){
+    const getht=new XMLHttpRequest();
+    getht.open('POST',`https://api.weixin.qq.com/tcb/databasequery?access_token=${ACCESS_TOKEN}`,true);
+    let data={
+        "env":"fzuanswersystem-7g3gmzjw761ecfdb",
+        "query":`db.collection(\'questions\').doc('${id}').get()`
+    }
+    getht.send(JSON.stringify(data));
+    getht.onreadystatechange=e=>{
+        if(getht.readyState==4){
+            let ques=JSON.parse(getht.responseText);
+            console.log(ques);
+            // 找不到是因为添加题目的时候没更新homework字段，记得改
+            if(ques.errcode==0&&ques.data.length==1){
+                // 找到
+                console.log(ques.data);
+            }
+        }
+    }
+}
+function hideAllSectionsAndDeselectButtons () {
+    const sections = document.querySelectorAll('.js-section.is-shown')
+    Array.prototype.forEach.call(sections, (section) => {
+        section.classList.remove('is-shown')
+    })
+
+    const buttons = document.querySelectorAll('.nav-button.is-selected')
+    Array.prototype.forEach.call(buttons, (button) => {
+        button.classList.remove('is-selected')
+    })
 }

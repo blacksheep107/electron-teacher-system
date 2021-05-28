@@ -11,7 +11,7 @@ document.body.addEventListener('click', (event) => {
 
 function handleSectionTrigger (event) {
   hideAllSectionsAndDeselectButtons()
-  console.log(event);
+  // console.log(event);
   // Highlight clicked button and show view
   event.target.classList.add('is-selected')
 

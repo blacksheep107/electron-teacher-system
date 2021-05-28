@@ -1,7 +1,7 @@
 /* Nav */
 
 .nav {
-  width: 300px;
+  width: 200px;
   overflow-x: hidden;
   overflow-y: auto;
   color: var(--color-subtle);
@@ -83,7 +83,7 @@
   background-color: hsla(0,0%,0%,.1);
 }
 .nav-button.is-selected {
-  background-color: var(--color-accent);
+  background-color: #4ca1a3;
 }
 .nav-button.is-selected,
 .nav-button.is-selected em {

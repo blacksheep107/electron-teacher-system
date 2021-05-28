@@ -110,6 +110,10 @@ function submit(){
         analysis=document.getElementById('selectanalysis2').value;
         questionContent=document.getElementById('selectquestion2').value;
         let singlearr=document.getElementsByName('checkbox');
+        if(singlearr.length<=1){
+            showAnime('请添加多于1个选项！');
+            return ;
+        }
         let ansarr=document.getElementsByName('checkboxcontent');
         choosenum=0;
         console.log(ansarr);
@@ -194,20 +198,25 @@ function addQuestionTowx(data,classid){
                         }
                         addhttp.send(JSON.stringify(adata));
                         addhttp.onreadystatechange=e=>{
-                            console.log(addhttp.responseText);
                             if(addhttp.readyState==4){
                                 let res2=JSON.parse(addhttp.responseText);
                                 if(res2.errcode==0){
-                                    // update ok
-                                    console.log('添加成功！');
-                                    // dialog=require('electron');
-                                    // dialog.showMessageBox({
-                                    //     title:'提示',
-                                    //     message:'添加成功',
-                                    //     buttons:["确定"]
-                                    // })
-                                    clearWindow();
-                                    showAnime('添加成功！');
+                                    const addhttp2=new XMLHttpRequest();
+                                    addhttp2.open('POST',`https://api.weixin.qq.com/tcb/databaseadd?access_token=${ACCESS_TOKEN}`,true);
+                                    let ad={
+                                        "env":"fzuanswersystem-7g3gmzjw761ecfdb",
+                                        "query":`db.collection(\'questions\').add({data:${JSON.stringify(data)}})`
+                                    }
+                                    addhttp2.send(JSON.stringify(ad));
+                                    addhttp2.onreadystatechange=e=>{
+                                        if(addhttp2.readyState==4){
+                                            let res3=JSON.parse(addhttp2.responseText);
+                                            if(res3.errcode==0){
+                                                clearWindow();
+                                                showAnime('添加成功！'); 
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
