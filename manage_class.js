@@ -1,5 +1,6 @@
 var globalData=require('./globalData');
 var ACCESS_TOKEN;
+var classinfo;
 function getClassInfo(classid){
     // 清空
     let cleardoc=document.querySelector('.class-section > div');
@@ -15,9 +16,7 @@ function getClassInfo(classid){
     http.onreadystatechange=e=>{
         if(http.readyState==4){
             ACCESS_TOKEN=JSON.parse(http.responseText).access_token;
-            // console.log(ACCESS_TOKEN);
             var ht=new XMLHttpRequest();
-            // console.log(classid);
             ht.open('POST',`https://api.weixin.qq.com/tcb/databasequery?access_token=${ACCESS_TOKEN}`,true);
             let data={
                 "env":"fzuanswersystem-7g3gmzjw761ecfdb",
@@ -274,10 +273,10 @@ function jmpToQuestion(){
 function loadUnitQuestions(){
     // 显示几个单元
     // console.log(globalData);
+    removeAllHomework();
     getAccess().then(()=>{
         const getht=new XMLHttpRequest();
         let classid=document.querySelector('.classid').innerHTML.substring(5);
-        // console.log(classid);
         getht.open('POST',`https://api.weixin.qq.com/tcb/databasequery?access_token=${ACCESS_TOKEN}`,true);
         let data={
             "env":"fzuanswersystem-7g3gmzjw761ecfdb",
@@ -288,39 +287,104 @@ function loadUnitQuestions(){
             if(getht.readyState==4){
                 let info=JSON.parse(JSON.parse(getht.responseText).data).homework;
                 console.log(info);
+                classinfo=info;
                 let allUnits=document.querySelector('.allUnits');
                 Object.keys(info).forEach(function(i){
-                    console.log(info[i]);
-                    // info[i] 一个单元所有题目id
-                    for(let j=0;j<info[i].length;j++){
-                        getQuestion(info[i][j]);
-                    }
                     let newnode=document.createElement('div');
-                    newnode.innerHTML=`<p>${info[i].key}</p>`
+                    newnode.classList.add('a-homework');
+                    let attr=document.createAttribute('onclick');
+                    attr.value=`showQuestions('${i}','${info[i]}')`;
+                    let id=document.createAttribute('id');
+                    id.value=i;
+                    newnode.setAttributeNode(attr);
+                    newnode.setAttributeNode(id);
+                    newnode.innerHTML=`<h3>${i}</h3><button onclick="addHomework(${i})">添加作业</button>`;
+                    allUnits.appendChild(newnode);
                 })
             }
         }
     })
 }
-function getQuestion(id){
-    const getht=new XMLHttpRequest();
-    getht.open('POST',`https://api.weixin.qq.com/tcb/databasequery?access_token=${ACCESS_TOKEN}`,true);
+function removeAllHomework(){
+    let allUnits=document.querySelector('.allUnits');
+    while(allUnits.hasChildNodes()) allUnits.removeChild(allUnits.firstChild);
+}
+function showQuestions(key,homework){
+    // 显示这个单元的所有题目，添加作业
+    // toggle
+    // ${}占位符会把数组转成字符串
+    let arr=homework.split(',');
+    console.log(arr);
+    let div=document.getElementById(key);
+    for(let j=0;j<arr.length;j++){
+        let qnode=document.createElement('div');    // 该单元所有作业
+        getQuestion(arr[j]).then(res=>{
+            console.log(res);
+            qnode.innerHTML=`<div class="workdata"><p>${res}</p></div>`
+        })
+    }
+}
+function addHomework(key){
+    console.log(key);
+    
+}
+function addUnit(){
+    // 添加章节
+    let newnode=document.createElement('div');
+    newnode.innerHTML=`<input placeholder="输入新章节名称" id="newunitname">`;
+    let addbtn=document.querySelector('.addUnit');
+    let doc=document.querySelector('.question-section');
+    doc.insertBefore(newnode,addbtn.nextSibling);
+    let newbtn=document.createElement('button');
+    newbtn.innerHTML='添加';
+    let click=document.createAttribute('onclick');
+    click.value=`addUnitAction()`;
+    newbtn.setAttributeNode(click);
+    newnode.appendChild(newbtn);
+}
+function addUnitAction(){
+    let newunitname=document.getElementById('newunitname').value;
+    const http=new XMLHttpRequest();
+    http.open('POST',`https://api.weixin.qq.com/tcb/databaseupdate?access_token=${ACCESS_TOKEN}`);
+    let classid=document.querySelector('.classid').innerHTML.substring(5);
+    let newdata=classinfo;
+    newdata[newunitname]=[];
+    // console.log(newdata);
+    // 对象不能用push更新
+    console.log(newdata);
     let data={
         "env":"fzuanswersystem-7g3gmzjw761ecfdb",
-        "query":`db.collection(\'questions\').doc('${id}').get()`
+        "query":`db.collection(\"class\").where({classid:'${classid}'}).update({data:{homework:${JSON.stringify(newdata)}}})`
     }
-    getht.send(JSON.stringify(data));
-    getht.onreadystatechange=e=>{
-        if(getht.readyState==4){
-            let ques=JSON.parse(getht.responseText);
-            console.log(ques);
-            // 找不到是因为添加题目的时候没更新homework字段，记得改
-            if(ques.errcode==0&&ques.data.length==1){
-                // 找到
-                console.log(ques.data);
-            }
+    http.send(JSON.stringify(data));
+    http.onreadystatechange=e=>{
+        if(http.readyState==4){
+            console.log(http.responseText);
         }
     }
+}
+function getQuestion(id){
+    return new Promise(resolve=>{
+        console.log(id);
+        const getht=new XMLHttpRequest();
+        getht.open('POST',`https://api.weixin.qq.com/tcb/databasequery?access_token=${ACCESS_TOKEN}`,true);
+        let data={
+            "env":"fzuanswersystem-7g3gmzjw761ecfdb",
+            "query":`db.collection(\'questions\').doc('${id}').get()`
+        }
+        getht.send(JSON.stringify(data));
+        getht.onreadystatechange=e=>{
+            if(getht.readyState==4){
+                let ques=JSON.parse(getht.responseText);
+                // 找不到是因为添加题目的时候没更新homework字段，记得改
+                if(ques.errcode==0&&ques.data.length==1){
+                    // 找到
+                    console.log(ques.data);
+                    resolve(ques.data);
+                }
+            }
+        }        
+    })
 }
 function hideAllSectionsAndDeselectButtons () {
     const sections = document.querySelectorAll('.js-section.is-shown')

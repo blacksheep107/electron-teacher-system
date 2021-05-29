@@ -25,39 +25,46 @@ function requestwxData(id,password){
             ht.send(JSON.stringify(data));
             ht.onreadystatechange=e=>{
                 if(ht.readyState==4){
-                    let info=JSON.parse(JSON.parse(ht.responseText).data);
-                    let corretpass=info.password;
-                    if(corretpass==password){
-                        globalData.teacherid=id;
-                        globalData.teacherpassword=corretpass;
-                        globalData.teacherclass=info.class;
-                        const alldoc=document.querySelector('.login-section');
-                        alldoc.classList.add('is-hidden');
-                        document.querySelector('.class-manage-section').classList.add('is-shown');
-                        const navbutton=document.querySelector('.nav-category-manageclass>button');
-                        navbutton.classList.add('is-selected');
-                        const manageclass=document.querySelector('.class-list');
-                        console.log(info.class);
-                        for(let i=0;i<info.class.length;i++){
-                            let newdiv=document.createElement('div');
-                            let newNode=document.createElement('button');
-                            newNode.innerHTML=info.class[i].classname;
-                            let attr=document.createAttribute('class');
-                            attr.value='classBlock';
-                            let click=document.createAttribute('onclick');
-                            click.value=`getClassInfo(${info.class[i].classid})`;
-                            let data=document.createAttribute('data-classid');
-                            data.value=info.class[i].classid;
-                            newNode.setAttributeNode(attr);
-                            newNode.setAttributeNode(click);
-                            newNode.setAttributeNode(data);
-                            newdiv.appendChild(newNode);
-                            manageclass.appendChild(newdiv);
-                        }
-                    }else{
+                    // console.log(JSON.parse(ht.responseText));
+                    if(JSON.parse(ht.responseText).data.length==0){
                         const wrongpass=document.querySelector('.wrongpass');
                         wrongpass.classList.add('is-shown');
+                    }else{
+                        let info=JSON.parse(JSON.parse(ht.responseText).data);
+                        let corretpass=info.password;
+                        if(corretpass==password){
+                            globalData.teacherid=id;
+                            globalData.teacherpassword=corretpass;
+                            globalData.teacherclass=info.class;
+                            const alldoc=document.querySelector('.login-section');
+                            alldoc.classList.add('is-hidden');
+                            document.querySelector('.class-manage-section').classList.add('is-shown');
+                            const navbutton=document.querySelector('.nav-category-manageclass>button');
+                            navbutton.classList.add('is-selected');
+                            const manageclass=document.querySelector('.class-list');
+                            console.log(info.class);
+                            for(let i=0;i<info.class.length;i++){
+                                let newdiv=document.createElement('div');
+                                let newNode=document.createElement('button');
+                                newNode.innerHTML=info.class[i].classname;
+                                let attr=document.createAttribute('class');
+                                attr.value='classBlock';
+                                let click=document.createAttribute('onclick');
+                                click.value=`getClassInfo(${info.class[i].classid})`;
+                                let data=document.createAttribute('data-classid');
+                                data.value=info.class[i].classid;
+                                newNode.setAttributeNode(attr);
+                                newNode.setAttributeNode(click);
+                                newNode.setAttributeNode(data);
+                                newdiv.appendChild(newNode);
+                                manageclass.appendChild(newdiv);
+                            }
+                        }else{
+                            const wrongpass=document.querySelector('.wrongpass');
+                            wrongpass.classList.add('is-shown');
+                        }                        
                     }
+
                 }
 
             }
