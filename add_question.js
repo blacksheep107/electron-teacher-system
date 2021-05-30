@@ -1,65 +1,64 @@
-var dialog;
 var globalData;
 var typearr=['单选题','多选题','填空题'];
 var hardlevel=['易','中','难'];
 var countsingle=0;
 var countmore=0;
-function onLoad(){
-    var doc=document.querySelector('.form');
-    var selectblock=document.querySelector('.selectblock');
-    // console.log(document.getElementsByTagName('select'));
-    globalData=require('./globalData');
-    console.log(globalData);
-    // 添加下拉框
-    if(!document.querySelector('select')){
-        let selectClass=document.createElement('select');
-        selectClass.innerHTML='';
-        let attr=document.createAttribute('id');
-        attr.value='selectClass';
-        selectClass.setAttributeNode(attr);
-        for(let i=0;i<globalData.teacherclass.length;i++){
-            selectClass.innerHTML+=`<option>${globalData.teacherclass[i].classname}</option>`;
-        }
-        let selectType=document.createElement('select');
-        let typeattr=document.createAttribute('id');
-        typeattr.value='selectType';
-        selectType.setAttributeNode(typeattr);
-        selectType.innerHTML='';
-        for(let i=0;i<typearr.length;i++){
-            selectType.innerHTML+=`<option>${typearr[i]}</option>`;
-        }
-        let selectLevel=document.createElement('select');
-        let attr2=document.createAttribute('id');
-        attr2.value='selectLevel';
-        selectLevel.setAttributeNode(attr2);
-        selectLevel.innerHTML='';
-        for(let i=0;i<hardlevel.length;i++){
-            selectLevel.innerHTML+=`<option>${hardlevel[i]}</option>`;
-        }
-        selectblock.prepend(selectClass);
-        selectblock.prepend(selectType);
-        selectblock.prepend(selectLevel);        
-    }
+// function onLoad(){
+//     var doc=document.querySelector('.form');
+//     var selectblock=document.querySelector('.selectblock');
+//     // console.log(document.getElementsByTagName('select'));
+//     globalData=require('./globalData');
+//     console.log(globalData);
+//     // 添加下拉框
+//     if(!document.querySelector('select')){
+//         let selectClass=document.createElement('select');
+//         selectClass.innerHTML='';
+//         let attr=document.createAttribute('id');
+//         attr.value='selectClass';
+//         selectClass.setAttributeNode(attr);
+//         for(let i=0;i<globalData.teacherclass.length;i++){
+//             selectClass.innerHTML+=`<option>${globalData.teacherclass[i].classname}</option>`;
+//         }
+//         let selectType=document.createElement('select');
+//         let typeattr=document.createAttribute('id');
+//         typeattr.value='selectType';
+//         selectType.setAttributeNode(typeattr);
+//         selectType.innerHTML='';
+//         for(let i=0;i<typearr.length;i++){
+//             selectType.innerHTML+=`<option>${typearr[i]}</option>`;
+//         }
+//         let selectLevel=document.createElement('select');
+//         let attr2=document.createAttribute('id');
+//         attr2.value='selectLevel';
+//         selectLevel.setAttributeNode(attr2);
+//         selectLevel.innerHTML='';
+//         for(let i=0;i<hardlevel.length;i++){
+//             selectLevel.innerHTML+=`<option>${hardlevel[i]}</option>`;
+//         }
+//         selectblock.prepend(selectClass);
+//         selectblock.prepend(selectType);
+//         selectblock.prepend(selectLevel);        
+//     }
 
-    hideAllForm();
-    document.querySelector('.selectSingle').classList.add('is-shown');
-    document.getElementById('selectType').addEventListener('change',function(e){
-        console.log(e.target.value);
-        if(e.target.value=='单选题'){
-            document.querySelector('.selectSingle').classList.add('is-shown');
-            document.querySelector('.selectMore').classList.remove('is-shown');
-            document.querySelector('.fillblank').classList.remove('is-shown');
-        }else if(e.target.value=='多选题'){
-            document.querySelector('.selectSingle').classList.remove('is-shown');
-            document.querySelector('.selectMore').classList.add('is-shown');
-            document.querySelector('.fillblank').classList.remove('is-shown');
-        }else if(e.target.value=='填空题'){
-            document.querySelector('.selectSingle').classList.remove('is-shown');
-            document.querySelector('.selectMore').classList.remove('is-shown');
-            document.querySelector('.fillblank').classList.add('is-shown');
-        }
-    });
-}
+//     hideAllForm();
+//     document.querySelector('.selectSingle').classList.add('is-shown');
+//     document.getElementById('selectType').addEventListener('change',function(e){
+//         console.log(e.target.value);
+//         if(e.target.value=='单选题'){
+//             document.querySelector('.selectSingle').classList.add('is-shown');
+//             document.querySelector('.selectMore').classList.remove('is-shown');
+//             document.querySelector('.fillblank').classList.remove('is-shown');
+//         }else if(e.target.value=='多选题'){
+//             document.querySelector('.selectSingle').classList.remove('is-shown');
+//             document.querySelector('.selectMore').classList.add('is-shown');
+//             document.querySelector('.fillblank').classList.remove('is-shown');
+//         }else if(e.target.value=='填空题'){
+//             document.querySelector('.selectSingle').classList.remove('is-shown');
+//             document.querySelector('.selectMore').classList.remove('is-shown');
+//             document.querySelector('.fillblank').classList.add('is-shown');
+//         }
+//     });
+// }
 function addRadioOption(){
     let newRadio=document.createElement('div');
     newRadio.classList.add('oneoption');
@@ -81,11 +80,16 @@ function addMoreOption(){
     selectMore.appendChild(newCheck);
     countmore++;
 }
-function submit(){
+var addidarr;
+var classname;
+var unitname;
+function submitQuestion(newdata){
+    addidarr=newdata;
     let type=document.getElementById('selectType').value;   // 选择填空
     let questionContent=document.getElementById('selectquestion').value;    // 问题
     let selectLevel=document.getElementById('selectLevel').value;   // 易中难
-    let classname=document.getElementById('selectClass').value;
+    classname=document.getElementById('classname-select').innerHTML;
+    unitname=document.getElementById('unitname').innerHTML;
     let answer;
     let answerarr=[];
     let analysis;
@@ -149,11 +153,15 @@ function submit(){
         "level":level,
         "type":qtype,
         "classname":classname,
-        "isorder":type=='多选题'?isorder:null
+        "unitname":unitname,
+        "isorder":type=='多选题'?isorder:null,
+        "studentsdid":{}
     }
     console.log(data);
     // 获取classid
     let classid;
+    console.log(classname);
+    console.log(globalData.teacherclass);
     for(let i=0;i<globalData.teacherclass.length;i++){
         if(globalData.teacherclass[i].classname==classname){
             classid=globalData.teacherclass[i].classid;
@@ -182,41 +190,43 @@ function addQuestionTowx(data,classid){
             }
             ht.send(JSON.stringify(htdata));
             ht.onreadystatechange=e=>{
-                // console.log(ht.responseText);
                 if(ht.readyState==4){
                     let res=JSON.parse(ht.responseText);
                     if(res.errcode==0){
-                        // add ok
-                        // add to class
-                        let _id=res.id_list[0];
-                        console.log(_id);
-                        const addhttp=new XMLHttpRequest();
-                        addhttp.open('POST',`https://api.weixin.qq.com/tcb/databaseupdate?access_token=${ACCESS_TOKEN}`,true);
-                        let adata={
+                        const addhttp2=new XMLHttpRequest();
+                        addhttp2.open('POST',`https://api.weixin.qq.com/tcb/databaseadd?access_token=${ACCESS_TOKEN}`,true);
+                        let ad={
                             "env":"fzuanswersystem-7g3gmzjw761ecfdb",
-                            "query":`db.collection(\'class\').where({classid:'${classid}'}).update({data:{questions:db.command.push('${_id}')}})`
+                            "query":`db.collection(\'questions\').add({data:${JSON.stringify(data)}})`
                         }
-                        addhttp.send(JSON.stringify(adata));
-                        addhttp.onreadystatechange=e=>{
-                            if(addhttp.readyState==4){
-                                let res2=JSON.parse(addhttp.responseText);
-                                if(res2.errcode==0){
-                                    const addhttp2=new XMLHttpRequest();
-                                    addhttp2.open('POST',`https://api.weixin.qq.com/tcb/databaseadd?access_token=${ACCESS_TOKEN}`,true);
-                                    let ad={
+                        addhttp2.send(JSON.stringify(ad));
+                        addhttp2.onreadystatechange=e=>{
+                            if(addhttp2.readyState==4){
+                                let res3=JSON.parse(addhttp2.responseText);
+                                if(res3.errcode==0){
+                                    let _id=res3.id_list[0];
+                                    addidarr.push(_id);
+                                    let adddata={};
+                                    adddata[unitname]=addidarr;
+                                    console.log(adddata);
+                                    const addhttp=new XMLHttpRequest();
+                                    addhttp.open('POST',`https://api.weixin.qq.com/tcb/databaseupdate?access_token=${ACCESS_TOKEN}`,true);
+                                    let adata={
                                         "env":"fzuanswersystem-7g3gmzjw761ecfdb",
-                                        "query":`db.collection(\'questions\').add({data:${JSON.stringify(data)}})`
+                                        "query":`db.collection(\'class\').where({classid:'${classid}'}).update({data:{homework:${JSON.stringify(adddata)}}})`
                                     }
-                                    addhttp2.send(JSON.stringify(ad));
-                                    addhttp2.onreadystatechange=e=>{
-                                        if(addhttp2.readyState==4){
-                                            let res3=JSON.parse(addhttp2.responseText);
-                                            if(res3.errcode==0){
+                                    addhttp.send(JSON.stringify(adata));
+                                    addhttp.onreadystatechange=e=>{
+                                        if(addhttp.readyState==4){
+                                            let res2=JSON.parse(addhttp.responseText);
+                                            console.log(res2);
+                                            if(res2.errcode==0&&res2.modified==1){
                                                 clearWindow();
-                                                showAnime('添加成功！'); 
+                                                showAnime('添加成功！');             
                                             }
                                         }
                                     }
+
                                 }
                             }
                         }

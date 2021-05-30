@@ -143,6 +143,7 @@ kbd {
   position: relative;
   overflow: hidden;
   margin: 30px;
+  overflow: auto;
   /* visibility: hidden;
   opacity: 0; */
 }

@@ -1,6 +1,7 @@
 var globalData=require('./globalData');
 var ACCESS_TOKEN;
 var classinfo;
+var forcedclass;
 function getClassInfo(classid){
     // 清空
     let cleardoc=document.querySelector('.class-section > div');
@@ -28,6 +29,8 @@ function getClassInfo(classid){
                     // console.log(JSON.parse(JSON.parse(ht.responseText).data));
                     let info=JSON.parse(JSON.parse(ht.responseText).data);
                     console.log(info);
+                    forcedclass=info;
+                    // console.log(info.homework);
                     document.querySelector('.class-manage-section').classList.remove('is-shown');
                     let doc=document.querySelector('.class-section');
                     doc.classList.add('is-shown');
@@ -272,7 +275,6 @@ function jmpToQuestion(){
 }
 function loadUnitQuestions(){
     // 显示几个单元
-    // console.log(globalData);
     removeAllHomework();
     getAccess().then(()=>{
         const getht=new XMLHttpRequest();
@@ -286,19 +288,16 @@ function loadUnitQuestions(){
         getht.onreadystatechange=e=>{
             if(getht.readyState==4){
                 let info=JSON.parse(JSON.parse(getht.responseText).data).homework;
-                console.log(info);
+                // console.log(info);
                 classinfo=info;
                 let allUnits=document.querySelector('.allUnits');
                 Object.keys(info).forEach(function(i){
                     let newnode=document.createElement('div');
                     newnode.classList.add('a-homework');
-                    let attr=document.createAttribute('onclick');
-                    attr.value=`showQuestions('${i}','${info[i]}')`;
                     let id=document.createAttribute('id');
                     id.value=i;
-                    newnode.setAttributeNode(attr);
                     newnode.setAttributeNode(id);
-                    newnode.innerHTML=`<h3>${i}</h3><button onclick="addHomework(${i})">添加作业</button>`;
+                    newnode.innerHTML=`<div class="homework-title"><h3 onclick="showQuestions('${i}','${info[i]}')">${i}</h3><button class="addhomework-btn" onclick="addHomework('${i}')">添加作业</button></div>`;
                     allUnits.appendChild(newnode);
                 })
             }
@@ -310,23 +309,70 @@ function removeAllHomework(){
     while(allUnits.hasChildNodes()) allUnits.removeChild(allUnits.firstChild);
 }
 function showQuestions(key,homework){
-    // 显示这个单元的所有题目，添加作业
-    // toggle
     // ${}占位符会把数组转成字符串
+    hideAllHomework();
     let arr=homework.split(',');
-    console.log(arr);
     let div=document.getElementById(key);
     for(let j=0;j<arr.length;j++){
         let qnode=document.createElement('div');    // 该单元所有作业
         getQuestion(arr[j]).then(res=>{
+            res=JSON.parse(res);
             console.log(res);
-            qnode.innerHTML=`<div class="workdata"><p>${res}</p></div>`
-        })
+            let type=(res.type=='fillblack'?'填空题':'单选题');
+            if(res.choosenum>1) type='多选题';
+            let levelobj={
+                'easy':'易',
+                'medium':'中',
+                'hard':'难'
+            };
+            // qnode.classList.add('workdata-parent');
+            qnode.innerHTML=`<div class="workdata" onclick="showStudentWork('${res._id}')">
+                <div class="workdata-title">
+                    <p>${type}</p>
+                    <p>${levelobj[res.level]}</p>                
+                </div>
+                <div class="workdata-content">
+                    <p>问题：${res.content}</p>
+                    <p>答案：${res.answer}</p>
+                    <p>解析：${res.analysis}</p>
+                </div>
+            </div>`
+
+            let block=document.createElement('div');
+            block.classList.add('studentdid');
+            block.id=res._id;
+            block.innerHTML='';
+            for(let i=0;i<res.studentsdid.length;i++){
+                block.innerHTML+=`<div class="a-studentdid">
+                    <p>${res.studentsdid[i].studentid}</p>
+                    <p>${res.studentsdid[i].studentname}</p>
+                    <p>${res.studentsdid[i].isRight}</p>
+                </div>`
+            }
+            qnode.appendChild(block);
+            div.append(qnode);
+        });
+    }
+}
+function showStudentWork(id){
+    // 做过题的学生
+    let node=document.getElementById(id);
+    if(node.classList.contains('is-shown')){
+        node.classList.remove('is-shown');
+    }else{
+        node.classList.add('is-shown');
+    }
+}
+function hideAllHomework(){
+    let allwork=document.querySelectorAll('.a-homework');
+    for(let i=0;i<allwork.length;i++){
+        while(allwork[i].childNodes.length>1) allwork[i].removeChild(allwork[i].lastChild);
     }
 }
 function addHomework(key){
     console.log(key);
-    
+    document.querySelector('.question-manage-section').classList.add('is-shown');
+    onLoad(key);
 }
 function addUnit(){
     // 添加章节
@@ -365,7 +411,6 @@ function addUnitAction(){
 }
 function getQuestion(id){
     return new Promise(resolve=>{
-        console.log(id);
         const getht=new XMLHttpRequest();
         getht.open('POST',`https://api.weixin.qq.com/tcb/databasequery?access_token=${ACCESS_TOKEN}`,true);
         let data={
@@ -379,11 +424,10 @@ function getQuestion(id){
                 // 找不到是因为添加题目的时候没更新homework字段，记得改
                 if(ques.errcode==0&&ques.data.length==1){
                     // 找到
-                    console.log(ques.data);
-                    resolve(ques.data);
+                    resolve(ques.data[0]);
                 }
             }
-        }        
+        }
     })
 }
 function hideAllSectionsAndDeselectButtons () {
@@ -396,4 +440,60 @@ function hideAllSectionsAndDeselectButtons () {
     Array.prototype.forEach.call(buttons, (button) => {
         button.classList.remove('is-selected')
     })
+}
+var onunit;
+function onLoad(key){
+    onunit=key;
+    var doc=document.querySelector('.form');
+    var selectblock=document.querySelector('.selectblock');
+    // 班级 章节信息
+    let classinfoNode=document.createElement('div');
+    classinfoNode.classList.add('add-question-title');
+    classinfoNode.innerHTML=`<p id="classname-select">${forcedclass.classname}</p><p id="unitname">${key}</p>`
+    doc.prepend(classinfoNode);
+    
+    // 添加下拉框
+    if(!document.querySelector('select')){
+        let selectType=document.createElement('select');
+        let typeattr=document.createAttribute('id');
+        typeattr.value='selectType';
+        selectType.setAttributeNode(typeattr);
+        selectType.innerHTML='';
+        for(let i=0;i<typearr.length;i++){
+            selectType.innerHTML+=`<option>${typearr[i]}</option>`;
+        }
+        let selectLevel=document.createElement('select');
+        let attr2=document.createAttribute('id');
+        attr2.value='selectLevel';
+        selectLevel.setAttributeNode(attr2);
+        selectLevel.innerHTML='';
+        for(let i=0;i<hardlevel.length;i++){
+            selectLevel.innerHTML+=`<option>${hardlevel[i]}</option>`;
+        }
+        selectblock.prepend(selectType);
+        selectblock.prepend(selectLevel);        
+    }
+
+    hideAllForm();
+    document.querySelector('.selectSingle').classList.add('is-shown');
+    document.getElementById('selectType').addEventListener('change',function(e){
+        console.log(e.target.value);
+        if(e.target.value=='单选题'){
+            document.querySelector('.selectSingle').classList.add('is-shown');
+            document.querySelector('.selectMore').classList.remove('is-shown');
+            document.querySelector('.fillblank').classList.remove('is-shown');
+        }else if(e.target.value=='多选题'){
+            document.querySelector('.selectSingle').classList.remove('is-shown');
+            document.querySelector('.selectMore').classList.add('is-shown');
+            document.querySelector('.fillblank').classList.remove('is-shown');
+        }else if(e.target.value=='填空题'){
+            document.querySelector('.selectSingle').classList.remove('is-shown');
+            document.querySelector('.selectMore').classList.remove('is-shown');
+            document.querySelector('.fillblank').classList.add('is-shown');
+        }
+    });
+}
+function submit(){
+    console.log(forcedclass.homework);
+    submitQuestion(forcedclass.homework[onunit]);
 }
