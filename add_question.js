@@ -84,6 +84,7 @@ var addidarr;
 var classname;
 var unitname;
 function submitQuestion(newdata){
+    console.log(newdata);
     addidarr=newdata;
     let type=document.getElementById('selectType').value;   // 选择填空
     let questionContent=document.getElementById('selectquestion').value;    // 问题
@@ -209,6 +210,7 @@ function addQuestionTowx(data,classid){
                                     let adddata={};
                                     adddata[unitname]=addidarr;
                                     console.log(adddata);
+                                    
                                     const addhttp=new XMLHttpRequest();
                                     addhttp.open('POST',`https://api.weixin.qq.com/tcb/databaseupdate?access_token=${ACCESS_TOKEN}`,true);
                                     let adata={
@@ -222,7 +224,7 @@ function addQuestionTowx(data,classid){
                                             console.log(res2);
                                             if(res2.errcode==0&&res2.modified==1){
                                                 clearWindow();
-                                                showAnime('添加成功！');             
+                                                showAnime('添加成功！');
                                             }
                                         }
                                     }
@@ -253,7 +255,8 @@ function clearWindow(){
 function showAnime(text){
     let doc=document.querySelector('.content');
     let block=document.createElement('div');
-    block.innerHTML=`<div class="tip">${text}</div>`;
+    block.classList.add('tip');
+    block.innerHTML=text;
     doc.appendChild(block);
     setTimeout(function(){
         doc.removeChild(block);

@@ -256,15 +256,15 @@ function addClassAction(){
     }
 
 }
-function showAnime(text){
-    let doc=document.querySelector('.content');
-    let block=document.createElement('div');
-    block.innerHTML=`<div class="tip">${text}</div>`;
-    doc.appendChild(block);
-    setTimeout(function(){
-        doc.removeChild(block);
-    },3000);
-}
+// function showAnime(text){
+//     let doc=document.querySelector('.content');
+//     let block=document.createElement('div');
+//     block.innerHTML=`<div class="tip">${text}</div>`;
+//     doc.appendChild(block);
+//     // setTimeout(function(){
+//     //     doc.removeChild(block);
+//     // },3000);
+// }
 function jmpToQuestion(){
     // 跳转查看题目页面
     hideAllSectionsAndDeselectButtons();
@@ -291,6 +291,7 @@ function loadUnitQuestions(){
                 // console.log(info);
                 classinfo=info;
                 let allUnits=document.querySelector('.allUnits');
+                allUnits.innerHTML="";
                 Object.keys(info).forEach(function(i){
                     let newnode=document.createElement('div');
                     newnode.classList.add('a-homework');
@@ -369,9 +370,14 @@ function hideAllHomework(){
         while(allwork[i].childNodes.length>1) allwork[i].removeChild(allwork[i].lastChild);
     }
 }
+function backClass(){
+    document.querySelector('.question-manage-section').classList.remove('is-shown');
+    document.querySelector('.question-section').classList.add('is-shown');
+}
 function addHomework(key){
     console.log(key);
     document.querySelector('.question-manage-section').classList.add('is-shown');
+    document.querySelector('.question-section').classList.remove('is-shown');
     onLoad(key);
 }
 function addUnit(){
@@ -405,7 +411,14 @@ function addUnitAction(){
     http.send(JSON.stringify(data));
     http.onreadystatechange=e=>{
         if(http.readyState==4){
-            console.log(http.responseText);
+            let res=JSON.parse(http.responseText);
+            console.log(res);
+            if(res.errcode==0&&res.modified==1){
+                showAnime('添加新章节成功！');
+                forcedclass.homework[newunitname]=[];
+                document.getElementById('newunitname').value="";
+                loadUnitQuestions();
+            }
         }
     }
 }
@@ -447,11 +460,15 @@ function onLoad(key){
     var doc=document.querySelector('.form');
     var selectblock=document.querySelector('.selectblock');
     // 班级 章节信息
-    let classinfoNode=document.createElement('div');
-    classinfoNode.classList.add('add-question-title');
-    classinfoNode.innerHTML=`<p id="classname-select">${forcedclass.classname}</p><p id="unitname">${key}</p>`
-    doc.prepend(classinfoNode);
-    
+    if(!document.querySelector('.add-question-title')){
+        let classinfoNode=document.createElement('div');
+        classinfoNode.classList.add('add-question-title');
+        classinfoNode.innerHTML=`<p id="classname-select">${forcedclass.classname}</p><p id="unitname">${key}</p>`
+        doc.prepend(classinfoNode);
+    }else{
+        document.getElementById('unitname').innerHTML=key;
+    }
+
     // 添加下拉框
     if(!document.querySelector('select')){
         let selectType=document.createElement('select');
