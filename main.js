@@ -1,10 +1,4 @@
-require('update-electron-app')({
-  logger: require('electron-log')
-})
-const XMLHttpRequest=require('xmlhttprequest').XMLHttpRequest;
-const http=new XMLHttpRequest();
 const path = require('path')
-const glob = require('glob')
 const {app, BrowserWindow} = require('electron')
 
 const debug = /--debug/.test(process.argv[2])
@@ -29,9 +23,6 @@ function initialize () {
       }
     }
 
-    if (process.platform === 'linux') {
-      windowOptions.icon = path.join(__dirname, '/assets/app-icon/png/512.png')
-    }
 
     mainWindow = new BrowserWindow(windowOptions)
     mainWindow.loadURL(path.join('file://', __dirname, '/index.html'))
@@ -65,13 +56,6 @@ function initialize () {
   })
 }
 
-// Make this app a single instance app.
-//
-// The main window will be restored and focused instead of a second window
-// opened when a person attempts to launch a second instance.
-//
-// Returns true if the current version of the app should quit instead of
-// launching.
 function makeSingleInstance () {
   if (process.mas) return
 
@@ -82,20 +66,6 @@ function makeSingleInstance () {
       if (mainWindow.isMinimized()) mainWindow.restore()
       mainWindow.focus()
     }
-  })
-}
-
-// Require each JS file in the main-process dir
-// function loadDemos () {
-//   const files = glob.sync(path.join(__dirname, 'main-process/**/*.js'))
-//   files.forEach((file) => { require(file) })
-// }
-function requestAccessToken(){
-  const url='https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET';
-  http.open("GET",'https://www.baidu.com');
-  http.send();
-  http.onreadystatechange(e=>{
-    console.log(e);
   })
 }
 initialize()

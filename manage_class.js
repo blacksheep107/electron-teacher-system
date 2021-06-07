@@ -298,7 +298,7 @@ function loadUnitQuestions(){
                     let id=document.createAttribute('id');
                     id.value=i;
                     newnode.setAttributeNode(id);
-                    newnode.innerHTML=`<div class="homework-title"><h3 onclick="showQuestions('${i}','${info[i]}')">${i}</h3><button class="addhomework-btn" onclick="addHomework('${i}')">添加作业</button></div>`;
+                    newnode.innerHTML=`<div class="homework-title"><h3 class="showQuestions" onclick="showQuestions('${i}','${info[i]}')">${i}</h3><button class="addhomework-btn" onclick="addHomework('${i}')">添加作业</button></div>`;
                     allUnits.appendChild(newnode);
                 })
             }
@@ -434,7 +434,6 @@ function getQuestion(id){
         getht.onreadystatechange=e=>{
             if(getht.readyState==4){
                 let ques=JSON.parse(getht.responseText);
-                // 找不到是因为添加题目的时候没更新homework字段，记得改
                 if(ques.errcode==0&&ques.data.length==1){
                     // 找到
                     resolve(ques.data[0]);

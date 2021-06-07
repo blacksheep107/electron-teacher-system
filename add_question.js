@@ -156,7 +156,7 @@ function submitQuestion(newdata){
         "classname":classname,
         "unitname":unitname,
         "isorder":type=='多选题'?isorder:null,
-        "studentsdid":{}
+        "studentsdid":[]
     }
     console.log(data);
     // 获取classid

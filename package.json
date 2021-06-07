@@ -1,6 +1,6 @@
 {
-  "name": "TeacherSystem",
-  "productName": "TeacherSystem",
+  "name": "teachersystem",
+  "productName": "teachersystem",
   "version": "2.0.2",
   "description": "Electron interactive API demos",
   "main": "main.js",
@@ -24,7 +24,7 @@
     "release": "node ./script/release.js",
     "prepack": "check-for-leaks",
     "prepush": "check-for-leaks",
-    "packager": "electron-packager . fukaiitapp --out fukaiitapp --arch=x64 --overwrite --ignore=node_modules"
+    "packager": "electron-packager . teachersystem --out teachersystem --arch=x64 --overwrite --ignore=node_modules"
   },
   "repository": "https://github.com/blacksheep107/electron-teacher-system",
   "keywords": [
@@ -60,7 +60,8 @@
     "glob": "^7.1.0",
     "highlight.js": "^10.4.1",
     "milsymbol": "^2.0.0",
-    "update-electron-app": "^1.1.1"
+    "update-electron-app": "^1.1.1",
+    "xmlhttprequest": "^1.8.0"
   },
   "standard": {
     "env": {
