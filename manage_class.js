@@ -42,13 +42,9 @@ function getClassInfo(classid){
                     line.classList.add('line');
                     doc.appendChild(line);
                     let stuarray=[];
-                    new Promise((resolve,reject)=>{
-                        for(let i=0;i<info.students.length;i++){
-                            // 数据处理
-                            // let a=getStudentInfo(info.students[i]);
-                            // console.log(a);
-                            // stuarray.push(a);
-                            // console.log(stuarray);
+                    let promisearr=[];
+                    for(let i=0;i<info.students.length;i++){
+                        let pro=new Promise(resolve=>{
                             const stuhttp=new XMLHttpRequest();
                             stuhttp.open('POST',`https://api.weixin.qq.com/tcb/databasequery?access_token=${ACCESS_TOKEN}`,true);
                             let data={
@@ -60,28 +56,44 @@ function getClassInfo(classid){
                                 if(stuhttp.readyState==4){
                                     let stinfo=JSON.parse(JSON.parse(stuhttp.responseText).data[0]);
                                     stuarray.push(stinfo);
-                                    if(i==info.students.length-1){
-                                        resolve();
-                                    }                                    
+                                    resolve();
                                 }
-                            }
-                        }
-                    }).then(()=>{
-                        stuarray.sort(function(a,b){
-                            return a.studentid<b.studentid;
+                            }                            
                         });
+                        promisearr.push(pro);
+                    }
+                    Promise.all(promisearr).then(()=>{
+                        // 显示length不一样
+                        stuarray.sort(function(a,b){
+                            return a.studentid-b.studentid;
+                        })
+                        console.log(stuarray);
                         let studentinfo=document.createElement('div');
                         studentinfo.classList.add('studentinfo');
-                        console.log(stuarray);
+                        // 只显示部分学生的bug
+                        
+                        let count=0;
                         for(let i=0;i<stuarray.length;i++){
                             let newnode=document.createElement('div');
                             newnode.classList.add('onestudent');
                             newnode.innerHTML= `<p>${stuarray[i].studentid}</p><p>${stuarray[i].name}</p><p>已完成题目数：</p><p>${stuarray[i].answeredquestions.length}</p>`;
+                            if(JSON.stringify(stuarray[i].score)!="{}"){
+                                let scorenode=document.createElement('div');
+                                scorenode.classList.add('one-score');
+                                scorenode.innerHTML='';
+                                console.log(stuarray[i]);
+                                console.log(stuarray[i].score); // 删一下数据库
+                                Object.keys(stuarray[i].score).forEach(item=>{
+                                    console.log(item);
+                                    scorenode.innerHTML+=`<p>${item}: ${stuarray[i].score[item]}</p>`
+                                });
+                                newnode.appendChild(scorenode);                                
+                            }
                             studentinfo.appendChild(newnode);
-                            console.log(newnode);
-                        }
-                        doc.appendChild(studentinfo);                        
-                    })
+                            count++;
+                        }              
+                        doc.appendChild(studentinfo);
+                    });
                 }
             }
         }
@@ -147,7 +159,7 @@ function addClassAction(){
                         teacherid:globalData.teacherid,
                         questions:[],
                         students:[],
-                        homeword:{},
+                        homework:{chance:3,questions:[]},
                     })}})`
                 }
                 addhttp.send(JSON.stringify(data));
@@ -206,7 +218,8 @@ function addClassAction(){
                 classname:newname,
                 teacherid:globalData.teacherid,
                 questions:[],
-                students:[]
+                students:[],
+                homework:{chance:3,questions:[]}
             })}})`
         }
         addhttp.send(JSON.stringify(data));
@@ -298,7 +311,12 @@ function loadUnitQuestions(){
                     let id=document.createAttribute('id');
                     id.value=i;
                     newnode.setAttributeNode(id);
-                    newnode.innerHTML=`<div class="homework-title"><h3 class="showQuestions" onclick="showQuestions('${i}','${info[i]}')">${i}</h3><button class="addhomework-btn" onclick="addHomework('${i}')">添加作业</button></div>`;
+                    newnode.innerHTML=`<div class="homework-title">
+                        <h3 class="showQuestions" onclick="showQuestions('${i}','${info[i].questions}')">${i}</h3>
+                        <button class="addhomework-btn" onclick="addHomework('${i}')">添加作业</button>
+                        <input class="chance-input" id="chancenum"/>
+                        <button class="addhomework-btn" onclick="setChance('${i}')">设置答题次数</button>
+                    </div>`;
                     allUnits.appendChild(newnode);
                 })
             }
@@ -312,6 +330,7 @@ function removeAllHomework(){
 function showQuestions(key,homework){
     // ${}占位符会把数组转成字符串
     hideAllHomework();
+    console.log(homework);
     let arr=homework.split(',');
     let div=document.getElementById(key);
     for(let j=0;j<arr.length;j++){
@@ -374,8 +393,33 @@ function backClass(){
     document.querySelector('.question-manage-section').classList.remove('is-shown');
     document.querySelector('.question-section').classList.add('is-shown');
 }
-function addHomework(key){
+function setChance(key){
     console.log(key);
+    let classid=document.querySelector('.classid').innerHTML.substring(5);
+    const http=new XMLHttpRequest();
+    http.open('POST',`https://api.weixin.qq.com/tcb/databaseupdate?access_token=${ACCESS_TOKEN}`);
+    let newdata=classinfo;
+    newdata[key].chance=document.getElementById('chancenum').value;
+    console.log(newdata);
+    let data={
+        "env":"fzuanswersystem-7g3gmzjw761ecfdb",
+        "query":`db.collection(\"class\").where({classid:'${classid}'}).update({data:{homework:${JSON.stringify(newdata)}}})`
+    }
+    http.send(JSON.stringify(data));
+    http.onreadystatechange=e=>{
+        if(http.readyState==4){
+            let res=JSON.parse(http.responseText);
+            console.log(res);
+            if(res.errcode==0&&res.modified==1){
+                showAnime('设置答题次数成功！');
+                // forcedclass.homework[newunitname]=[];
+                // document.getElementById('newunitname').value="";
+                // loadUnitQuestions();
+            }
+        }
+    }
+}
+function addHomework(key){
     document.querySelector('.question-manage-section').classList.add('is-shown');
     document.querySelector('.question-section').classList.remove('is-shown');
     onLoad(key);
@@ -400,7 +444,10 @@ function addUnitAction(){
     http.open('POST',`https://api.weixin.qq.com/tcb/databaseupdate?access_token=${ACCESS_TOKEN}`);
     let classid=document.querySelector('.classid').innerHTML.substring(5);
     let newdata=classinfo;
-    newdata[newunitname]=[];
+    newdata[newunitname]={
+        'chance':3,
+        questions:[]
+    };
     // console.log(newdata);
     // 对象不能用push更新
     console.log(newdata);

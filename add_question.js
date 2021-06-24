@@ -3,62 +3,6 @@ var typearr=['单选题','多选题','填空题'];
 var hardlevel=['易','中','难'];
 var countsingle=0;
 var countmore=0;
-// function onLoad(){
-//     var doc=document.querySelector('.form');
-//     var selectblock=document.querySelector('.selectblock');
-//     // console.log(document.getElementsByTagName('select'));
-//     globalData=require('./globalData');
-//     console.log(globalData);
-//     // 添加下拉框
-//     if(!document.querySelector('select')){
-//         let selectClass=document.createElement('select');
-//         selectClass.innerHTML='';
-//         let attr=document.createAttribute('id');
-//         attr.value='selectClass';
-//         selectClass.setAttributeNode(attr);
-//         for(let i=0;i<globalData.teacherclass.length;i++){
-//             selectClass.innerHTML+=`<option>${globalData.teacherclass[i].classname}</option>`;
-//         }
-//         let selectType=document.createElement('select');
-//         let typeattr=document.createAttribute('id');
-//         typeattr.value='selectType';
-//         selectType.setAttributeNode(typeattr);
-//         selectType.innerHTML='';
-//         for(let i=0;i<typearr.length;i++){
-//             selectType.innerHTML+=`<option>${typearr[i]}</option>`;
-//         }
-//         let selectLevel=document.createElement('select');
-//         let attr2=document.createAttribute('id');
-//         attr2.value='selectLevel';
-//         selectLevel.setAttributeNode(attr2);
-//         selectLevel.innerHTML='';
-//         for(let i=0;i<hardlevel.length;i++){
-//             selectLevel.innerHTML+=`<option>${hardlevel[i]}</option>`;
-//         }
-//         selectblock.prepend(selectClass);
-//         selectblock.prepend(selectType);
-//         selectblock.prepend(selectLevel);        
-//     }
-
-//     hideAllForm();
-//     document.querySelector('.selectSingle').classList.add('is-shown');
-//     document.getElementById('selectType').addEventListener('change',function(e){
-//         console.log(e.target.value);
-//         if(e.target.value=='单选题'){
-//             document.querySelector('.selectSingle').classList.add('is-shown');
-//             document.querySelector('.selectMore').classList.remove('is-shown');
-//             document.querySelector('.fillblank').classList.remove('is-shown');
-//         }else if(e.target.value=='多选题'){
-//             document.querySelector('.selectSingle').classList.remove('is-shown');
-//             document.querySelector('.selectMore').classList.add('is-shown');
-//             document.querySelector('.fillblank').classList.remove('is-shown');
-//         }else if(e.target.value=='填空题'){
-//             document.querySelector('.selectSingle').classList.remove('is-shown');
-//             document.querySelector('.selectMore').classList.remove('is-shown');
-//             document.querySelector('.fillblank').classList.add('is-shown');
-//         }
-//     });
-// }
 function addRadioOption(){
     let newRadio=document.createElement('div');
     newRadio.classList.add('oneoption');
@@ -203,10 +147,11 @@ function addQuestionTowx(data,classid){
                         addhttp2.send(JSON.stringify(ad));
                         addhttp2.onreadystatechange=e=>{
                             if(addhttp2.readyState==4){
+                                console.log(addidarr);
                                 let res3=JSON.parse(addhttp2.responseText);
                                 if(res3.errcode==0){
                                     let _id=res3.id_list[0];
-                                    addidarr.push(_id);
+                                    addidarr.questions.push(_id);
                                     let adddata={};
                                     adddata[unitname]=addidarr;
                                     console.log(adddata);
