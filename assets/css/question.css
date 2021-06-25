@@ -9,3 +9,18 @@
     margin-right: -40px;
     margin-left: 40px;
 }
+.one-score{
+    background: #EDEDED;
+    font-size: 14px;
+    font-family: monospace;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    flex-wrap: wrap;
+    width: max-content;
+    display: grid;
+    width: auto;
+    margin-right: 10px;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+}

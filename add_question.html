@@ -30,12 +30,23 @@
                 </div>
             </view>
             <view class="fillblank">
-                <h2>添加填空题</h2>
+                <div class="titleop">
+                    <h2>添加填空题</h2>
+                    <button class="addop" onclick="addBlankOption()">添加答案</button>                    
+                </div>
                 <textarea id="fillquestion" placeholder="在此输入题目详情"></textarea>
-                <textarea id="fillanswer" placeholder="在此输入答案"></textarea>
+                <div class="inputanswer"></div>
+                <!-- <textarea id="fillanswer" placeholder="在此输入答案"></textarea> -->
                 <textarea id="selectanalysis3" placeholder="在此输入解析"></textarea>
             </view>
-            <button class="submit" onclick="submit()">发布</button>
+            <div class="bottom">
+                <input type="file" id="uploadfile" class="file" onchange="show(this)" />
+                <div class="submitblock">
+                    <input id="setpoint" type="number" placeholder="输入分值"/>
+                    <button class="submit" onclick="submit()">发布</button>                      
+                </div>
+            </div>
+
         </view>
     </view>
 </template>

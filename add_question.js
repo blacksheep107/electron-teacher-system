@@ -3,6 +3,7 @@ var typearr=['单选题','多选题','填空题'];
 var hardlevel=['易','中','难'];
 var countsingle=0;
 var countmore=0;
+var countblank=0;
 function addRadioOption(){
     let newRadio=document.createElement('div');
     newRadio.classList.add('oneoption');
@@ -10,6 +11,14 @@ function addRadioOption(){
     let selectSingle=document.querySelector('.selectSingleB');
     selectSingle.appendChild(newRadio);
     countsingle++;
+}
+function addBlankOption(){
+    let newblank=document.createElement('div');
+    newblank.classList.add('oneoption');
+    newblank.innerHTML=`答案${countblank}. <input class="opinput" data-s=${countblank} name="blankcontent" placeholder="输入答案内容" />`
+    let blank=document.querySelector('.inputanswer');
+    blank.appendChild(newblank);
+    countblank++;
 }
 function hideAllForm(){
     document.querySelector('.selectSingle').classList.remove('is-shown');
@@ -27,6 +36,7 @@ function addMoreOption(){
 var addidarr;
 var classname;
 var unitname;
+var picturesUrl;    // 只能一张图片
 function submitQuestion(newdata){
     console.log(newdata);
     addidarr=newdata;
@@ -36,6 +46,7 @@ function submitQuestion(newdata){
     classname=document.getElementById('classname-select').innerHTML;
     unitname=document.getElementById('unitname').innerHTML;
     let answer;
+    let blanknum;
     let answerarr=[];
     let analysis;
     let choosecontent=[];
@@ -78,10 +89,18 @@ function submitQuestion(newdata){
         }
     }else if(type=='填空题'){
         analysis=document.getElementById('selectanalysis3').value;
-        answer=document.getElementById('fillanswer').value;
         questionContent=document.getElementById('fillquestion').value;
         choosecontent=null;
         choosenum=null;
+        let ansarr=document.getElementsByName('blankcontent');
+        blanknum=ansarr.length;
+        if(blanknum<=0){
+            showAnime('请添加至少一个答案！');
+            return ;
+        }
+        for(let i=0;i<ansarr.length;i++){
+            answerarr.push(ansarr[i].value);
+        }
     }
     let level='easy';
     if(selectLevel=='中')   level='medium';
@@ -91,22 +110,22 @@ function submitQuestion(newdata){
     let isorder=document.getElementsByName('isOrderBtn')[0].checked;   // true按序
     let data={
         "analysis":analysis,
-        "answer":type=='多选题'?answerarr:answer,
+        "answer":type=='单选题'?answer:answerarr,   // 填空题答案和多选题答案放arr
         "choosecontent":choosecontent,
         "choosenum":choosenum,
+        "blanknum":blanknum,    // 填空题
         "content":questionContent,
         "level":level,
         "type":qtype,
         "classname":classname,
         "unitname":unitname,
         "isorder":type=='多选题'?isorder:null,
-        "studentsdid":[]
+        "studentsdid":[],
+        "point":document.getElementById('setpoint').value,
+        "pictures":picturesUrl
     }
-    console.log(data);
     // 获取classid
     let classid;
-    console.log(classname);
-    console.log(globalData.teacherclass);
     for(let i=0;i<globalData.teacherclass.length;i++){
         if(globalData.teacherclass[i].classname==classname){
             classid=globalData.teacherclass[i].classid;
@@ -115,9 +134,19 @@ function submitQuestion(newdata){
     }
     addQuestionTowx(data,classid);
 }
+var ACCESS_TOKEN;
+function replaceSlashes(key, value) 
+{ 
+    if (typeof value == "string") 
+    { 
+    value = value.replace(/\//g, "\\/"); 
+    } 
+    return value; 
+} 
 function addQuestionTowx(data,classid){
     // question放入详细题目
     // class放入题目id
+    console.log(data);
     const http=new XMLHttpRequest();
     const APPID='wx53d4c253e80f5250';
     const APPSECRET='99bfb8dd8bf3736bf4cd0103722b8fbc';
@@ -131,12 +160,13 @@ function addQuestionTowx(data,classid){
             ht.open('POST',`https://api.weixin.qq.com/tcb/databaseadd?access_token=${ACCESS_TOKEN}`,true);
             let htdata={
                 "env":"fzuanswersystem-7g3gmzjw761ecfdb",
-                "query":`db.collection(\'${data.level}_question\').add({data:${JSON.stringify(data)}})`
+                "query":`db.collection(\'${data.level}_question\').add({data:${JSON.stringify(data,replaceSlashes)}})`
             }
             ht.send(JSON.stringify(htdata));
             ht.onreadystatechange=e=>{
                 if(ht.readyState==4){
                     let res=JSON.parse(ht.responseText);
+                    console.log(res);
                     if(res.errcode==0){
                         const addhttp2=new XMLHttpRequest();
                         addhttp2.open('POST',`https://api.weixin.qq.com/tcb/databaseadd?access_token=${ACCESS_TOKEN}`,true);
@@ -155,7 +185,6 @@ function addQuestionTowx(data,classid){
                                     let adddata={};
                                     adddata[unitname]=addidarr;
                                     console.log(adddata);
-                                    
                                     const addhttp=new XMLHttpRequest();
                                     addhttp.open('POST',`https://api.weixin.qq.com/tcb/databaseupdate?access_token=${ACCESS_TOKEN}`,true);
                                     let adata={
@@ -166,7 +195,6 @@ function addQuestionTowx(data,classid){
                                     addhttp.onreadystatechange=e=>{
                                         if(addhttp.readyState==4){
                                             let res2=JSON.parse(addhttp.responseText);
-                                            console.log(res2);
                                             if(res2.errcode==0&&res2.modified==1){
                                                 clearWindow();
                                                 showAnime('添加成功！');
@@ -188,9 +216,9 @@ function clearWindow(){
     document.getElementById('selectanalysis').value='';
     document.getElementById('selectquestion2').value='';
     document.getElementById('selectanalysis2').value='';
-    document.getElementById('fillanswer').value='';
     document.getElementById('selectanalysis3').value='';
     document.getElementById('fillquestion').value='';
+    document.getElementById('setpoint').value='';
     let children=document.querySelector('.selectSingleB');
     while(children.hasChildNodes()) children.removeChild(children.firstChild);
     let c2=document.querySelector('.selectMoreB');
@@ -206,4 +234,67 @@ function showAnime(text){
     setTimeout(function(){
         doc.removeChild(block);
     },3000);
+}
+function show(source){
+    // 添加图片
+    var file=source.files[0];
+    var fr=new FileReader();
+    fr.readAsBinaryString(file);
+    fr.onloadend=function(e){
+        var http=new XMLHttpRequest();
+        http.open("POST",`https://api.weixin.qq.com/tcb/uploadfile?access_token=${ACCESS_TOKEN}`);
+        let path=file.path.replace(/\\/g,'/'); // 把反斜杠都改成斜杠试试
+        console.log(path);
+        let data={
+            "env":"fzuanswersystem-7g3gmzjw761ecfdb",
+            "path":path
+        }
+        http.send(JSON.stringify(data));
+        http.onreadystatechange=e=>{
+            if(http.readyState==4){
+                let res=JSON.parse(http.responseText);
+                console.log(res);
+                var ht=new XMLHttpRequest();
+                ht.open("POST",res.url);            
+                let formData=new FormData();
+                formData.append("key",path);
+                formData.append("Signature",res.authorization);
+                formData.append("x-cos-security-token",res.token);
+                formData.append("x-cos-meta-fileid",res.cos_file_id);
+                formData.append("file",file);
+                ht.send(formData);
+                ht.onreadystatechange=e=>{
+                    if(ht.readyState==4){
+                        if(ht.status==204){
+                            picturesUrl=res.file_id;
+                            showAnime('图片上传成功');
+                            // 获取http下载链接，cloud有显示问题
+                            // http不能获取永久地址，cnmd微信
+                            // var ht2=new XMLHttpRequest();
+                            // ht2.open("POST",`https://api.weixin.qq.com/tcb/batchdownloadfile?access_token=${ACCESS_TOKEN}`);
+                            // let data3={
+                            //     "env":"fzuanswersystem-7g3gmzjw761ecfdb",
+                            //     "file_list":[{
+                            //         "fileid":res.file_id,
+                            //         "max_age":7200
+                            //     }]
+                            // };
+                            // console.log(JSON.stringify(data3));
+                            // ht2.send(JSON.stringify(data3));
+                            // ht2.onreadystatechange=e=>{
+                            //     if(ht2.readyState==4){
+                            //         let res=JSON.parse(ht2.responseText);
+                            //         console.log(res);
+                            //         if(res.errcode==0){
+                            //             picturesUrl=res.file_list[0].download_url;
+                            //             showAnime('图片上传成功');
+                            //         }
+                            //     }
+                            // }
+                        }
+                    }
+                }
+            }
+        }
+    };
 }

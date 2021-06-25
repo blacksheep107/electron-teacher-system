@@ -93,10 +93,10 @@
   flex-direction: column;
 }
 .onestudent{
-  display: grid;
+  display: flex;
+  flex-direction: column;
   font-size: 18px;
   font-weight: 800;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
   white-space: nowrap;
   background: #d3e0ea;
   border-radius: 10px;
@@ -213,4 +213,12 @@ button:active {
   margin: 10px;
   padding: 6px;
   border: 1px solid #c0c0c0;
+}
+.student-info{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+.pwidth{
+  width: 100px;
 }

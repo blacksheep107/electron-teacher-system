@@ -91,7 +91,7 @@ textarea{
   -webkit-transition-duration: 0.4s;
   transition-duration: 0.4s;
   border: 1px solid #4ca1a3;
-  margin-left: 350px;
+  margin-left: 180px;
 }
 .submit:hover{
   background-color: #4ca1a3; /* Green */
@@ -129,4 +129,17 @@ textarea{
   display: flex;
   flex-direction: row;
   align-items: center;
+}
+#setpoint{
+  height: 30px;
+  text-align-last: center;
+  margin-top: 16px;
+}
+.bottom{
+  display: flex;
+  flex-direction: column;
+}
+.submitblock{
+  display: flex;
+  flex-direction: row;
 }

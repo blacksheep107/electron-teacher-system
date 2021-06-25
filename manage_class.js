@@ -76,7 +76,11 @@ function getClassInfo(classid){
                         for(let i=0;i<stuarray.length;i++){
                             let newnode=document.createElement('div');
                             newnode.classList.add('onestudent');
-                            newnode.innerHTML= `<p>${stuarray[i].studentid}</p><p>${stuarray[i].name}</p><p>已完成题目数：</p><p>${stuarray[i].answeredquestions.length}</p>`;
+                            newnode.innerHTML= `<div class="student-info">
+                            <p class="pwidth">${stuarray[i].studentid}</p>
+                            <p class="pwidth">${stuarray[i].name}</p>
+                            <p class="pwidth">已完成题目数：${stuarray[i].answeredquestions.length}</p>
+                            </div>`;
                             if(JSON.stringify(stuarray[i].score)!="{}"){
                                 let scorenode=document.createElement('div');
                                 scorenode.classList.add('one-score');
@@ -84,8 +88,7 @@ function getClassInfo(classid){
                                 console.log(stuarray[i]);
                                 console.log(stuarray[i].score); // 删一下数据库
                                 Object.keys(stuarray[i].score).forEach(item=>{
-                                    console.log(item);
-                                    scorenode.innerHTML+=`<p>${item}: ${stuarray[i].score[item]}</p>`
+                                    scorenode.innerHTML+=`<p>${item}: ${stuarray[i].score[item].score}</p>`
                                 });
                                 newnode.appendChild(scorenode);                                
                             }
@@ -159,7 +162,7 @@ function addClassAction(){
                         teacherid:globalData.teacherid,
                         questions:[],
                         students:[],
-                        homework:{chance:3,questions:[]},
+                        homework:{},
                     })}})`
                 }
                 addhttp.send(JSON.stringify(data));
@@ -345,32 +348,81 @@ function showQuestions(key,homework){
                 'medium':'中',
                 'hard':'难'
             };
-            // qnode.classList.add('workdata-parent');
-            qnode.innerHTML=`<div class="workdata" onclick="showStudentWork('${res._id}')">
-                <div class="workdata-title">
-                    <p>${type}</p>
-                    <p>${levelobj[res.level]}</p>                
-                </div>
-                <div class="workdata-content">
-                    <p>问题：${res.content}</p>
-                    <p>答案：${res.answer}</p>
-                    <p>解析：${res.analysis}</p>
-                </div>
-            </div>`
-
-            let block=document.createElement('div');
-            block.classList.add('studentdid');
-            block.id=res._id;
-            block.innerHTML='';
-            for(let i=0;i<res.studentsdid.length;i++){
-                block.innerHTML+=`<div class="a-studentdid">
-                    <p>${res.studentsdid[i].studentid}</p>
-                    <p>${res.studentsdid[i].studentname}</p>
-                    <p>${res.studentsdid[i].isRight}</p>
-                </div>`
+            // 题目有图片
+            if(res.pictures){
+                var ht2=new XMLHttpRequest();
+                ht2.open("POST",`https://api.weixin.qq.com/tcb/batchdownloadfile?access_token=${ACCESS_TOKEN}`);
+                let data3={
+                    "env":"fzuanswersystem-7g3gmzjw761ecfdb",
+                    "file_list":[{
+                        "fileid":res.pictures,
+                        "max_age":72000
+                    }]
+                };
+                console.log(JSON.stringify(data3));
+                ht2.send(JSON.stringify(data3));
+                ht2.onreadystatechange=e=>{
+                    if(ht2.readyState==4){
+                        let res1=JSON.parse(ht2.responseText);
+                        console.log(res1);
+                        if(res1.errcode==0){
+                            let picture=res1.file_list[0].download_url;
+                            qnode.innerHTML=`
+                            <div class="workdata" onclick="showStudentWork('${res._id}')">
+                                <div class="workdata-title">
+                                    <p>${type}</p>
+                                    <p>${levelobj[res.level]}</p>                
+                                </div>
+                                <div class="workdata-content">
+                                    <p>问题：${res.content}</p>
+                                    <img src=${picture} />
+                                    <p>答案：${res.answer}</p>
+                                    <p>解析：${res.analysis}</p>
+                                </div>
+                            </div>`;
+                            let block=document.createElement('div');
+                            block.classList.add('studentdid');
+                            block.id=res._id;
+                            block.innerHTML='';
+                            for(let i=0;i<res.studentsdid.length;i++){
+                                block.innerHTML+=`<div class="a-studentdid">
+                                    <p>${res.studentsdid[i].studentid}</p>
+                                    <p>${res.studentsdid[i].studentname}</p>
+                                    <p>${res.studentsdid[i].isRight}</p>
+                                </div>`
+                            }
+                            qnode.appendChild(block);
+                            div.append(qnode);
+                        }
+                    }
+                }
+            }else{
+                qnode.innerHTML=`
+                <div class="workdata" onclick="showStudentWork('${res._id}')">
+                    <div class="workdata-title">
+                        <p>${type}</p>
+                        <p>${levelobj[res.level]}</p>                
+                    </div>
+                    <div class="workdata-content">
+                        <p>问题：${res.content}</p>
+                        <p>答案：${res.answer}</p>
+                        <p>解析：${res.analysis}</p>
+                    </div>
+                </div>`;
+                let block=document.createElement('div');
+                block.classList.add('studentdid');
+                block.id=res._id;
+                block.innerHTML='';
+                for(let i=0;i<res.studentsdid.length;i++){
+                    block.innerHTML+=`<div class="a-studentdid">
+                        <p>${res.studentsdid[i].studentid}</p>
+                        <p>${res.studentsdid[i].studentname}</p>
+                        <p>${res.studentsdid[i].isRight}</p>
+                    </div>`
+                }
+                qnode.appendChild(block);
+                div.append(qnode);
             }
-            qnode.appendChild(block);
-            div.append(qnode);
         });
     }
 }
@@ -540,7 +592,6 @@ function onLoad(key){
     hideAllForm();
     document.querySelector('.selectSingle').classList.add('is-shown');
     document.getElementById('selectType').addEventListener('change',function(e){
-        console.log(e.target.value);
         if(e.target.value=='单选题'){
             document.querySelector('.selectSingle').classList.add('is-shown');
             document.querySelector('.selectMore').classList.remove('is-shown');
