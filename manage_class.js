@@ -4,6 +4,7 @@ var classinfo;
 var forcedclass;
 function getClassInfo(classid){
     // 清空
+    console.log(classid);   // 有前导0的纯数字会出错
     let cleardoc=document.querySelector('.class-section > div');
     while(cleardoc){
         cleardoc.remove();
@@ -26,7 +27,6 @@ function getClassInfo(classid){
             ht.send(JSON.stringify(data));
             ht.onreadystatechange=e=>{
                 if(ht.readyState==4){
-                    // console.log(JSON.parse(JSON.parse(ht.responseText).data));
                     let info=JSON.parse(JSON.parse(ht.responseText).data);
                     console.log(info);
                     forcedclass=info;
@@ -139,11 +139,8 @@ function addClass(){
     newblock.prepend(newname);
     newblock.prepend(newid);
 }
-function addClassAction(){
-    let newid=document.getElementById('newclassid').value;
-    let newname=document.getElementById('newclassname').value;
-    // add record in class
-    if(!ACCESS_TOKEN){
+function getAccessToken(){
+    return new Promise(resolve=>{
         const http=new XMLHttpRequest();
         const APPID='wx53d4c253e80f5250';
         const APPSECRET='99bfb8dd8bf3736bf4cd0103722b8fbc';
@@ -152,123 +149,144 @@ function addClassAction(){
         http.onreadystatechange=e=>{
             if(http.readyState==4){
                 ACCESS_TOKEN=JSON.parse(http.responseText).access_token;
-                const addhttp=new XMLHttpRequest();
-                addhttp.open('POST',`https://api.weixin.qq.com/tcb/databaseadd?access_token=${ACCESS_TOKEN}`);
-                let data={
-                    "env":"fzuanswersystem-7g3gmzjw761ecfdb",
-                    "query":`db.collection(\"class\").add({data:${JSON.stringify({
-                        classid:newid,
-                        classname:newname,
-                        teacherid:globalData.teacherid,
-                        questions:[],
-                        students:[],
-                        homework:{},
-                    })}})`
-                }
-                addhttp.send(JSON.stringify(data));
-                new Promise(resolve=>{
-                    addhttp.onreadystatechange=e=>{
-                        console.log(addhttp.responseText);
-                        if(addhttp.readyState==4){
-                            let res=addhttp.responseText;
-                            if(JSON.parse(res).errcode==0){
-                                // add ok
-                                resolve();
-                            }
-                        }
-                    }        
-                }).then(()=>{
-                    const updatehttp=new XMLHttpRequest();
-                    updatehttp.open('POST',`https://api.weixin.qq.com/tcb/databaseupdate?access_token=${ACCESS_TOKEN}`);
-                    let newdata={
-                        "classid":newid,
-                        "classname":newname
-                    }
-                    data={
-                        "env":"fzuanswersystem-7g3gmzjw761ecfdb",
-                        "query":`db.collection(\"teacher\").where({id:'${globalData.teacherid}'}).update({data:{class: db.command.push(${JSON.stringify(newdata)})}})`
-                    }
-                    updatehttp.send(JSON.stringify(data));
-                    updatehttp.onreadystatechange=e=>{
-                        if(updatehttp.readyState==4){
-                            let res=JSON.parse(updatehttp.responseText);
-                            console.log(res);
-                            if(res.errcode==0&&res.modified>0){
-                                // 添加成功
-                                document.querySelector('.addclass').classList.add('is-hidden');
-                                let classlist=document.querySelector('.class-list');
-                                let newclassdiv=document.createElement('div');
-                                newclassdiv.innerHTML=`<button class="classBlock" onclick="getClassInfo(${newid})">${newname}</button>`
-                                classlist.appendChild(newclassdiv);
-                                globalData.teacherclass.push({
-                                    'classid':newid,
-                                    'classname':newname
-                                });
-                                showAnime('添加成功！');
-                            }
-                        }
-                    }
-                })
+                resolve();
             }
         }
-    }else{
-        const addhttp=new XMLHttpRequest();
-        addhttp.open('POST',`https://api.weixin.qq.com/tcb/databaseadd?access_token=${ACCESS_TOKEN}`);
+    })
+}
+var sameid=false;
+function isSameId(id){
+    // 是否有重复编号
+    return new Promise(resolve=>{
+        let get=new XMLHttpRequest();
+        get.open('POST',`https://api.weixin.qq.com/tcb/databasequery?access_token=${ACCESS_TOKEN}`);
         let data={
             "env":"fzuanswersystem-7g3gmzjw761ecfdb",
-            "query":`db.collection(\"class\").add({data:${JSON.stringify({
-                classid:newid,
-                classname:newname,
-                teacherid:globalData.teacherid,
-                questions:[],
-                students:[],
-                homework:{chance:3,questions:[]}
-            })}})`
+            "query":`db.collection(\'class\').where({classid:'${id}'}).limit(100).get()`
         }
-        addhttp.send(JSON.stringify(data));
-        new Promise(resolve=>{
-            addhttp.onreadystatechange=e=>{
-                console.log(addhttp.responseText);
-                if(addhttp.readyState==4){
-                    let res=addhttp.responseText;
-                    if(JSON.parse(res).errcode==0){
-                        // add ok
-                        resolve();
-                    }
+        get.send(JSON.stringify(data));
+        get.onreadystatechange=e=>{
+            if(get.readyState==4){
+                let res=JSON.parse(get.responseText);
+                console.log(res);
+                if(res.data.length>0){
+                    showAnime('该班级编号已被占用！');
+                    sameid=true;                    
                 }
-            }        
+                resolve();
+            }
+        }           
+    })
+}
+var samename=false;
+function isSameName(name){
+    // 同个老师是否有重复班级名
+    let count=globalData.teacherclass.length;
+    return new Promise(resolve=>{
+        new Promise(re=>{
+            globalData.teacherclass.forEach(item=>{
+                if(item.classname==name){
+                    showAnime('已有重复班级名！');
+                    samename=true;
+                    re();
+                }
+                count--;
+            });
+            if(count==0)    re();
         }).then(()=>{
-            const updatehttp=new XMLHttpRequest();
-            updatehttp.open('POST',`https://api.weixin.qq.com/tcb/databaseupdate?access_token=${ACCESS_TOKEN}`);
-            let newdata={
-                "classid":newid,
-                "classname":newname
-            }
-            data={
-                "env":"fzuanswersystem-7g3gmzjw761ecfdb",
-                "query":`db.collection(\"teacher\").where({id:'${globalData.teacherid}'}).update({data:{class: db.command.push(${JSON.stringify(newdata)})}})`
-            }
-            updatehttp.send(JSON.stringify(data));
-            updatehttp.onreadystatechange=e=>{
-                if(updatehttp.readyState==4){
-                    let res=JSON.parse(updatehttp.responseText);
-                    console.log(res);
-                    if(res.errcode==0&&res.modified>0){
-                        // 添加成功
-                        document.querySelector('.addclass').classList.add('is-hidden');
-                        let classlist=document.querySelector('.class-list');
-                        let newclassdiv=document.createElement('div');
-                        newclassdiv.innerHTML=`<button class="classBlock" onclick="getClassInfo(${newid})">${newname}</button>`
-                        classlist.appendChild(newclassdiv);
-                        globalData.teacherclass.push({
-                            'classid':newid,
-                            'classname':newname
-                        });
-                        showAnime('添加成功！');
-                    }
-                }
-            }
+            resolve();
         })
+    })
+}
+function addClassToServer(newid,newname){
+    sameid=samename=false;
+    isSameId(newid).then(()=>{
+        if(sameid){
+            return  ;
+        }else{
+            isSameName(newname).then(()=>{
+                if(samename){
+                    return  ;
+                }else{
+                    const addhttp=new XMLHttpRequest();
+                    addhttp.open('POST',`https://api.weixin.qq.com/tcb/databaseadd?access_token=${ACCESS_TOKEN}`);
+                    let data={
+                        "env":"fzuanswersystem-7g3gmzjw761ecfdb",
+                        "query":`db.collection(\"class\").add({data:${JSON.stringify({
+                            classid:newid,
+                            classname:newname,
+                            teacherid:globalData.teacherid,
+                            questions:[],
+                            students:[],
+                            homework:{},
+                        })}})`
+                    }
+                    addhttp.send(JSON.stringify(data));
+                    new Promise(resolve=>{
+                        addhttp.onreadystatechange=e=>{
+                            console.log(addhttp.responseText);
+                            if(addhttp.readyState==4){
+                                let res=addhttp.responseText;
+                                if(JSON.parse(res).errcode==0){
+                                    // add ok
+                                    resolve();
+                                }
+                            }
+                        }        
+                    }).then(()=>{
+                        const updatehttp=new XMLHttpRequest();
+                        updatehttp.open('POST',`https://api.weixin.qq.com/tcb/databaseupdate?access_token=${ACCESS_TOKEN}`);
+                        let newdata={
+                            "classid":newid,
+                            "classname":newname
+                        }
+                        data={
+                            "env":"fzuanswersystem-7g3gmzjw761ecfdb",
+                            "query":`db.collection(\"teacher\").where({id:'${globalData.teacherid}'}).update({data:{class: db.command.push(${JSON.stringify(newdata)})}})`
+                        }
+                        updatehttp.send(JSON.stringify(data));
+                        updatehttp.onreadystatechange=e=>{
+                            if(updatehttp.readyState==4){
+                                let res=JSON.parse(updatehttp.responseText);
+                                console.log(res);
+                                if(res.errcode==0&&res.modified>0){
+                                    // 添加成功
+                                    document.querySelector('.addclass').classList.add('is-hidden');
+                                    let classlist=document.querySelector('.class-list');
+                                    let newclassdiv=document.createElement('div');
+                                    newclassdiv.innerHTML=`<img class="class-icon" src="https://667a-fzuanswersystem-7g3gmzjw761ecfdb-1305763704.tcb.qcloud.la/%E7%8F%AD%E7%BA%A7%20(1).png?sign=5d1ed90016ab22619af6aa36b900fcf5&t=1624780057" />
+                                    <button class="classBlock" onclick="getClassInfo(${newid})">${newname}</button>`
+                                    newclassdiv.classList.add('oneclass');
+                                    classlist.appendChild(newclassdiv);
+                                    globalData.teacherclass.push({
+                                        'classid':newid,
+                                        'classname':newname
+                                    });
+                                    showAnime('添加成功！');
+                                }
+                            }
+                        }
+                    })
+                }
+            })
+        }
+    })
+}
+function addClassAction(){
+    let newid=document.getElementById('newclassid').value;
+    let newname=document.getElementById('newclassname').value;
+    if(newid[0]=='0'){
+        showAnime('禁止班级编号有前导0');
+        return ;
+    }
+
+    // add record in class
+    if(!ACCESS_TOKEN){
+        getAccessToken().then(()=>{
+            addClassToServer(newid,newname);
+        })
+    }else{
+        addClassToServer(newid,newname);
     }
 
 }
@@ -330,6 +348,8 @@ function removeAllHomework(){
     let allUnits=document.querySelector('.allUnits');
     while(allUnits.hasChildNodes()) allUnits.removeChild(allUnits.firstChild);
 }
+var RIGHTIMG="https://667a-fzuanswersystem-7g3gmzjw761ecfdb-1305763704.tcb.qcloud.la/%E7%A1%AE%E8%AE%A4%20%E6%AD%A3%E7%A1%AE.png?sign=9903412cd4405131d1e56bf30f21dd48&t=1624794311";
+var FALSEIMG="https://667a-fzuanswersystem-7g3gmzjw761ecfdb-1305763704.tcb.qcloud.la/%E9%94%99%E8%AF%AF.png?sign=d3082b1f71629a9813867de929c100ee&t=1624794415"
 function showQuestions(key,homework){
     // ${}占位符会把数组转成字符串
     hideAllHomework();
@@ -385,10 +405,14 @@ function showQuestions(key,homework){
                             block.id=res._id;
                             block.innerHTML='';
                             for(let i=0;i<res.studentsdid.length;i++){
+                                let img=FALSEIMG;
+                                if(res.studentsdid[i].isRight){
+                                    img=RIGHTIMG;
+                                }
                                 block.innerHTML+=`<div class="a-studentdid">
                                     <p>${res.studentsdid[i].studentid}</p>
                                     <p>${res.studentsdid[i].studentname}</p>
-                                    <p>${res.studentsdid[i].isRight}</p>
+                                    <img class="right-icon" src=${img} />
                                 </div>`
                             }
                             qnode.appendChild(block);
@@ -414,10 +438,14 @@ function showQuestions(key,homework){
                 block.id=res._id;
                 block.innerHTML='';
                 for(let i=0;i<res.studentsdid.length;i++){
+                    let img=FALSEIMG;
+                    if(res.studentsdid[i].isRight){
+                        img=RIGHTIMG;
+                    }
                     block.innerHTML+=`<div class="a-studentdid">
                         <p>${res.studentsdid[i].studentid}</p>
                         <p>${res.studentsdid[i].studentname}</p>
-                        <p>${res.studentsdid[i].isRight}</p>
+                        <img class="right-icon" src=${img} />
                     </div>`
                 }
                 qnode.appendChild(block);
@@ -514,7 +542,11 @@ function addUnitAction(){
             console.log(res);
             if(res.errcode==0&&res.modified==1){
                 showAnime('添加新章节成功！');
-                forcedclass.homework[newunitname]=[];
+                // 默认新章节次数是3
+                forcedclass.homework[newunitname]={
+                    "chance":3,
+                    "questions":[]
+                };
                 document.getElementById('newunitname').value="";
                 loadUnitQuestions();
             }

@@ -165,3 +165,11 @@ kbd {
 .hljs:active {
   outline: 1px solid transparent;
 }
+.background{
+  position: absolute;
+  z-index: -999;
+  left: 200px;
+  bottom: 80px;
+  height: 200px;
+  opacity: 0.1;
+}

@@ -45,6 +45,7 @@ function requestwxData(id,password){
                             console.log(info.class);
                             for(let i=0;i<info.class.length;i++){
                                 let newdiv=document.createElement('div');
+                                newdiv.classList.add('oneclass');
                                 let newNode=document.createElement('button');
                                 newNode.innerHTML=info.class[i].classname;
                                 let attr=document.createAttribute('class');
@@ -56,6 +57,7 @@ function requestwxData(id,password){
                                 newNode.setAttributeNode(attr);
                                 newNode.setAttributeNode(click);
                                 newNode.setAttributeNode(data);
+                                newdiv.innerHTML+=`<img class="class-icon" src="https://667a-fzuanswersystem-7g3gmzjw761ecfdb-1305763704.tcb.qcloud.la/%E7%8F%AD%E7%BA%A7%20(1).png?sign=5d1ed90016ab22619af6aa36b900fcf5&t=1624780057" />`;
                                 newdiv.appendChild(newNode);
                                 manageclass.appendChild(newdiv);
                             }

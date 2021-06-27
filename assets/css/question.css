@@ -10,8 +10,8 @@
     margin-left: 40px;
 }
 .one-score{
-    background: #EDEDED;
-    font-size: 14px;
+    background: #f5f5f5;
+    font-size: 16px;
     font-family: monospace;
     padding-left: 10px;
     padding-right: 10px;
@@ -21,6 +21,7 @@
     width: max-content;
     display: grid;
     width: auto;
-    margin-right: 10px;
+    margin-right: 30px;
     grid-template-columns: 1fr 1fr 1fr 1fr;
+    margin-left: 20px;
 }

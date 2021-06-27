@@ -143,7 +143,7 @@ function replaceSlashes(key, value)
     } 
     return value; 
 } 
-function addQuestionTowx(data,classid){
+function addQuestionTowx(data,classname){
     // question放入详细题目
     // class放入题目id
     console.log(data);
@@ -191,9 +191,11 @@ function addQuestionTowx(data,classid){
                                         "env":"fzuanswersystem-7g3gmzjw761ecfdb",
                                         "query":`db.collection(\'class\').where({classid:'${classid}'}).update({data:{homework:${JSON.stringify(adddata)}}})`
                                     }
+                                    console.log(adata);
                                     addhttp.send(JSON.stringify(adata));
                                     addhttp.onreadystatechange=e=>{
                                         if(addhttp.readyState==4){
+                                            console.log(addhttp.responseText);
                                             let res2=JSON.parse(addhttp.responseText);
                                             if(res2.errcode==0&&res2.modified==1){
                                                 clearWindow();
