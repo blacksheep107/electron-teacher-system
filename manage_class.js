@@ -334,7 +334,7 @@ function loadUnitQuestions(){
                     newnode.setAttributeNode(id);
                     newnode.innerHTML=`<div class="homework-title">
                         <h3 class="showQuestions" onclick="showQuestions('${i}','${info[i].questions}')">${i}</h3>
-                        <button class="addhomework-btn" onclick="addHomework('${i}')">添加作业</button>
+                        <button class="addhomework-btn" onclick="addHomework('${i}','${classid}')">添加作业</button>
                         <input class="chance-input" id="chancenum"/>
                         <button class="addhomework-btn" onclick="setChance('${i}')">设置答题次数</button>
                     </div>`;
@@ -499,10 +499,10 @@ function setChance(key){
         }
     }
 }
-function addHomework(key){
+function addHomework(key,classid){
     document.querySelector('.question-manage-section').classList.add('is-shown');
     document.querySelector('.question-section').classList.remove('is-shown');
-    onLoad(key);
+    onLoad(key,classid);
 }
 function addUnit(){
     // 添加章节
@@ -585,7 +585,8 @@ function hideAllSectionsAndDeselectButtons () {
     })
 }
 var onunit;
-function onLoad(key){
+function onLoad(key,classname){
+    console.log(classname);
     onunit=key;
     var doc=document.querySelector('.form');
     var selectblock=document.querySelector('.selectblock');

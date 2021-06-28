@@ -1,4 +1,3 @@
-const settings = require('electron-settings')
 document.body.addEventListener('click', (event) => {
   if (event.target.dataset.section) {
     handleSectionTrigger(event)
@@ -22,7 +21,6 @@ function handleSectionTrigger (event) {
   console.log(document.getElementById(sectionId));
   // Save currently active button in localStorage
   const buttonId = event.target.getAttribute('id')
-  settings.set('activeSectionButtonId', buttonId)
 }
 
 function activateDefaultSection () {
@@ -65,12 +63,3 @@ function displayAbout () {
 }
 
 // Default to the view that was active the last time the app was open
-const sectionId = settings.get('activeSectionButtonId')
-if (sectionId) {
-  showMainContent()
-  const section = document.getElementById(sectionId)
-  if (section) section.click()
-} else {
-  // activateDefaultSection()
-  // displayAbout()
-}

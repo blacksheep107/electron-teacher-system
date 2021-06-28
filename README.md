@@ -7,3 +7,5 @@
 ### log
 
 - git reset --hard commitid，会重置本地文件，别乱用。吓死我了还以为一晚上的代码都没了。还好没push的commitid也留着。就因为有个打包后的大文件也放在git add，导致push的时候报错。
+- 运行：npm start
+- 打包：npm run packager

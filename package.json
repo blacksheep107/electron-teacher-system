@@ -55,7 +55,6 @@
   "dependencies": {
     "electron": "^9.4.0",
     "electron-log": "^2.2.14",
-    "electron-settings": "^3.0.7",
     "electron-shortcut-normalizer": "^1.0.0",
     "glob": "^7.1.0",
     "highlight.js": "^10.4.1",

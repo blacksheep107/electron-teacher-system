@@ -143,10 +143,11 @@ function replaceSlashes(key, value)
     } 
     return value; 
 } 
-function addQuestionTowx(data,classname){
+function addQuestionTowx(data,classid){
     // question放入详细题目
     // class放入题目id
     console.log(data);
+    console.log(classid);
     const http=new XMLHttpRequest();
     const APPID='wx53d4c253e80f5250';
     const APPSECRET='99bfb8dd8bf3736bf4cd0103722b8fbc';
@@ -155,58 +156,46 @@ function addQuestionTowx(data,classname){
     http.onreadystatechange=e=>{
         if(http.readyState==4){
             ACCESS_TOKEN=JSON.parse(http.responseText).access_token;
-            var ht=new XMLHttpRequest();
-            // question插入
-            ht.open('POST',`https://api.weixin.qq.com/tcb/databaseadd?access_token=${ACCESS_TOKEN}`,true);
-            let htdata={
+            const addhttp2=new XMLHttpRequest();
+            addhttp2.open('POST',`https://api.weixin.qq.com/tcb/databaseadd?access_token=${ACCESS_TOKEN}`,true);
+            let ad={
                 "env":"fzuanswersystem-7g3gmzjw761ecfdb",
-                "query":`db.collection(\'${data.level}_question\').add({data:${JSON.stringify(data,replaceSlashes)}})`
+                "query":`db.collection(\'questions\').add({data:${JSON.stringify(data)}})`
             }
-            ht.send(JSON.stringify(htdata));
-            ht.onreadystatechange=e=>{
-                if(ht.readyState==4){
-                    let res=JSON.parse(ht.responseText);
-                    console.log(res);
-                    if(res.errcode==0){
-                        const addhttp2=new XMLHttpRequest();
-                        addhttp2.open('POST',`https://api.weixin.qq.com/tcb/databaseadd?access_token=${ACCESS_TOKEN}`,true);
-                        let ad={
-                            "env":"fzuanswersystem-7g3gmzjw761ecfdb",
-                            "query":`db.collection(\'questions\').add({data:${JSON.stringify(data)}})`
-                        }
-                        addhttp2.send(JSON.stringify(ad));
-                        addhttp2.onreadystatechange=e=>{
-                            if(addhttp2.readyState==4){
-                                console.log(addidarr);
-                                let res3=JSON.parse(addhttp2.responseText);
-                                if(res3.errcode==0){
-                                    let _id=res3.id_list[0];
-                                    addidarr.questions.push(_id);
-                                    let adddata={};
-                                    adddata[unitname]=addidarr;
-                                    console.log(adddata);
-                                    const addhttp=new XMLHttpRequest();
-                                    addhttp.open('POST',`https://api.weixin.qq.com/tcb/databaseupdate?access_token=${ACCESS_TOKEN}`,true);
-                                    let adata={
-                                        "env":"fzuanswersystem-7g3gmzjw761ecfdb",
-                                        "query":`db.collection(\'class\').where({classid:'${classid}'}).update({data:{homework:${JSON.stringify(adddata)}}})`
-                                    }
-                                    console.log(adata);
-                                    addhttp.send(JSON.stringify(adata));
-                                    addhttp.onreadystatechange=e=>{
-                                        if(addhttp.readyState==4){
-                                            console.log(addhttp.responseText);
-                                            let res2=JSON.parse(addhttp.responseText);
-                                            if(res2.errcode==0&&res2.modified==1){
-                                                clearWindow();
-                                                showAnime('添加成功！');
-                                            }
-                                        }
-                                    }
+            // questions
+            addhttp2.send(JSON.stringify(ad));
+            addhttp2.onreadystatechange=e=>{
+                if(addhttp2.readyState==4){
+                    console.log(addidarr);
+                    let res3=JSON.parse(addhttp2.responseText);
+                    if(res3.errcode==0){
+                        let _id=res3.id_list[0];
 
+                        addidarr.questions.push(_id);
+                        let adddata={};
+                        adddata[unitname]=addidarr;
+                        console.log(adddata);
+                        
+                        const addhttp=new XMLHttpRequest();
+                        addhttp.open('POST',`https://api.weixin.qq.com/tcb/databaseupdate?access_token=${ACCESS_TOKEN}`,true);
+                        let adata={
+                            "env":"fzuanswersystem-7g3gmzjw761ecfdb",
+                            "query":`db.collection(\'class\').where({classid:'${classid}'}).update({data:{homework:${JSON.stringify(adddata)}}})`
+                        }
+                        // class插入questions _id
+                        console.log(adata);
+                        addhttp.send(JSON.stringify(adata));
+                        addhttp.onreadystatechange=e=>{
+                            if(addhttp.readyState==4){
+                                console.log(addhttp.responseText);
+                                let res2=JSON.parse(addhttp.responseText);
+                                if(res2.errcode==0&&res2.modified==1){
+                                    clearWindow();
+                                    showAnime('添加成功！');
                                 }
                             }
                         }
+
                     }
                 }
             }
