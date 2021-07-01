@@ -91,6 +91,7 @@
 .studentinfo{
   display: flex;
   flex-direction: column;
+  text-align: center;
 }
 .onestudent{
   display: flex;
@@ -257,12 +258,18 @@ button:active {
 .student-info{
   display: flex;
   flex-direction: row;
-  justify-content: space-around;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow: auto;
+  font-size: 14px;
 }
 .pwidth{
-  width: 120px;
-  margin: 10px;
+  width: 80px;
+  margin: 8px;
+}
+.unitscore{
+  display: flex;
+  flex-direction: column;
+  text-align: -webkit-center;
 }
 .class-icon{
   height: 70px;
@@ -275,4 +282,18 @@ button:active {
   display: flex;
   flex-direction: row;
   align-items: center;
+}
+.sttitle{
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: #F3F4ED;
+  border-radius: 10px;
+  margin-top: 10px;
+  padding-left: 16px;
+  align-items: center;
+  text-align: center;
 }

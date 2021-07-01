@@ -29,67 +29,116 @@ function getClassInfo(classid){
                 if(ht.readyState==4){
                     let info=JSON.parse(JSON.parse(ht.responseText).data);
                     console.log(info);
-                    forcedclass=info;
-                    // console.log(info.homework);
-                    document.querySelector('.class-manage-section').classList.remove('is-shown');
-                    let doc=document.querySelector('.class-section');
-                    doc.classList.add('is-shown');
-                    let classnode=document.createElement('div');
-                    classnode.innerHTML=`<div class="classid">班级编号：${info.classid}</div><div class="classname">班级名：${info.classname}</div>`
-                    classnode.classList.add('classinfo');
-                    doc.appendChild(classnode);
-                    let line=document.createElement('div');
-                    line.classList.add('line');
-                    doc.appendChild(line);
-                    let stuarray=[];
-                    let promisearr=[];
-                    for(let i=0;i<info.students.length;i++){
-                        let pro=new Promise(resolve=>{
-                            const stuhttp=new XMLHttpRequest();
-                            stuhttp.open('POST',`https://api.weixin.qq.com/tcb/databasequery?access_token=${ACCESS_TOKEN}`,true);
-                            let data={
-                                "env":"fzuanswersystem-7g3gmzjw761ecfdb",
-                                "query":`db.collection(\'users\').where({studentid:'${info.students[i]}'}).limit(100).get()`
-                            }
-                            stuhttp.send(JSON.stringify(data));
-                            stuhttp.onreadystatechange=e=>{
-                                if(stuhttp.readyState==4){
-                                    let stinfo=JSON.parse(JSON.parse(stuhttp.responseText).data[0]);
-                                    stuarray.push(stinfo);
-                                    resolve();
+                    let sttitle=document.createElement('div');
+                    sttitle.classList.add('sttitle');
+                    sttitle.innerHTML=`<p class=pwidth>学号</p>
+                    <p class=pwidth>姓名</p>`;
+                    let unitObj={};
+                    new Promise(re=>{
+                        let count=Object.keys(info.homework).length;
+                        Object.keys(info.homework).forEach(unit=>{
+                            // 每个单元
+                            unitObj[unit]=0;
+                            let unitc=info.homework[unit].questions.length;
+                            let unitscore=0;
+                            new Promise(resolve=>{
+                                if(info.homework[unit].questions.length==0) resolve();
+                                info.homework[unit].questions.forEach(q=>{
+                                    let h=new XMLHttpRequest();
+                                    h.open("POST",`https://api.weixin.qq.com/tcb/databasequery?access_token=${ACCESS_TOKEN}`);
+                                    let data={
+                                        "env":"fzuanswersystem-7g3gmzjw761ecfdb",
+                                        "query":`db.collection(\'questions\').doc('${q}').get()`
+                                    };
+                                    h.send(JSON.stringify(data));
+                                    h.onreadystatechange=e=>{
+                                        if(h.readyState==4){
+                                            let res=JSON.parse(h.responseText);
+                                            if(res.data.length>0){
+                                                let d=JSON.parse(res.data[0]);
+                                                unitscore+=parseInt(d.point);
+                                                if(--unitc==0){
+                                                    resolve();
+                                                }
+                                            }
+                                        }
+                                    }
+                                })                            
+                            }).then(()=>{
+                                // 保证顺序
+                                unitObj[unit]=unitscore;
+                                if(--count==0){
+                                    re();
                                 }
-                            }                            
-                        });
-                        promisearr.push(pro);
-                    }
-                    Promise.all(promisearr).then(()=>{
-                        // 显示length不一样
-                        stuarray.sort(function(a,b){
-                            return a.studentid-b.studentid;
+                            });
+                        })                        
+                    }).then(()=>{
+                        Object.keys(unitObj).forEach(unit=>{
+                            sttitle.innerHTML+=`<div ckass="unitscore"><p class="pwidth">${unit}</p><p class="pwidth">总分：${unitObj[unit]}</p></div>`;
                         })
-                        console.log(stuarray);
-                        let studentinfo=document.createElement('div');
-                        studentinfo.classList.add('studentinfo');
-                        // 只显示部分学生的bug
-                        
-                        let count=0;
-                        for(let i=0;i<stuarray.length;i++){
-                            let newnode=document.createElement('div');
-                            newnode.classList.add('onestudent');
-                            newnode.innerHTML= `<div class="student-info">
-                            <p class="pwidth">${stuarray[i].studentid}</p>
-                            <p class="pwidth">${stuarray[i].name}</p>
-                            </div>`;
-                            if(JSON.stringify(stuarray[i].score)!="{}"){
-                                Object.keys(stuarray[i].score).forEach(item=>{
-                                    newnode.firstChild.innerHTML+=`<p class="pwidth">${item}: ${stuarray[i].score[item].score}分</p>`
-                                });
+                        let doc=document.querySelector('.class-section');
+                        forcedclass=info;
+                        // console.log(info.homework);
+                        document.querySelector('.class-manage-section').classList.remove('is-shown');
+                        doc.classList.add('is-shown');
+                        let classnode=document.createElement('div');
+                        classnode.innerHTML=`<div class="classid">班级编号：${info.classid}</div><div class="classname">班级名：${info.classname}</div>`
+                        classnode.classList.add('classinfo');
+                        doc.appendChild(classnode);
+                        let line=document.createElement('div');
+                        line.classList.add('line');
+                        doc.appendChild(line);
+                        doc.appendChild(sttitle);
+                        let stuarray=[];
+                        let promisearr=[];
+                        for(let i=0;i<info.students.length;i++){
+                            let pro=new Promise(resolve=>{
+                                const stuhttp=new XMLHttpRequest();
+                                stuhttp.open('POST',`https://api.weixin.qq.com/tcb/databasequery?access_token=${ACCESS_TOKEN}`,true);
+                                let data={
+                                    "env":"fzuanswersystem-7g3gmzjw761ecfdb",
+                                    "query":`db.collection(\'users\').where({studentid:'${info.students[i]}'}).limit(100).get()`
+                                }
+                                stuhttp.send(JSON.stringify(data));
+                                stuhttp.onreadystatechange=e=>{
+                                    if(stuhttp.readyState==4){
+                                        let stinfo=JSON.parse(JSON.parse(stuhttp.responseText).data[0]);
+                                        stuarray.push(stinfo);
+                                        resolve();
+                                    }
+                                }                            
+                            });
+                            promisearr.push(pro);
+                        }
+                        Promise.all(promisearr).then(()=>{
+                            // 显示length不一样
+                            stuarray.sort(function(a,b){
+                                return a.studentid-b.studentid;
+                            })
+                            console.log(stuarray);
+                            let studentinfo=document.createElement('div');
+                            studentinfo.classList.add('studentinfo');
+                            // 只显示部分学生的bug
+                            let count=0;
+                            for(let i=0;i<stuarray.length;i++){
+                                let newnode=document.createElement('div');
+                                newnode.classList.add('onestudent');
+                                newnode.innerHTML= `<div class="student-info">
+                                <p class="pwidth">${stuarray[i].studentid}</p>
+                                <p class="pwidth">${stuarray[i].name}</p>
+                                </div>`;
+                                if(JSON.stringify(stuarray[i].score)!="{}"){
+                                    Object.keys(stuarray[i].score).forEach(item=>{
+                                        newnode.firstChild.innerHTML+=`<p class="pwidth">${stuarray[i].score[item].score}分</p>`
+                                    });
+                                }
+                                studentinfo.appendChild(newnode);
+                                count++;
                             }
-                            studentinfo.appendChild(newnode);
-                            count++;
-                        }              
-                        doc.appendChild(studentinfo);
-                    });
+                            doc.appendChild(studentinfo);
+                        });                        
+                    })
+
                 }
             }
         }
