@@ -79,18 +79,11 @@ function getClassInfo(classid){
                             newnode.innerHTML= `<div class="student-info">
                             <p class="pwidth">${stuarray[i].studentid}</p>
                             <p class="pwidth">${stuarray[i].name}</p>
-                            <p class="pwidth">已完成题目数：${stuarray[i].answeredquestions.length}</p>
                             </div>`;
                             if(JSON.stringify(stuarray[i].score)!="{}"){
-                                let scorenode=document.createElement('div');
-                                scorenode.classList.add('one-score');
-                                scorenode.innerHTML='';
-                                console.log(stuarray[i]);
-                                console.log(stuarray[i].score); // 删一下数据库
                                 Object.keys(stuarray[i].score).forEach(item=>{
-                                    scorenode.innerHTML+=`<p>${item}: ${stuarray[i].score[item].score}</p>`
+                                    newnode.firstChild.innerHTML+=`<p class="pwidth">${item}: ${stuarray[i].score[item].score}分</p>`
                                 });
-                                newnode.appendChild(scorenode);                                
                             }
                             studentinfo.appendChild(newnode);
                             count++;
@@ -180,22 +173,25 @@ function isSameId(id){
 }
 var samename=false;
 function isSameName(name){
-    // 同个老师是否有重复班级名
-    let count=globalData.teacherclass.length;
+    // 是否有重复班级名
     return new Promise(resolve=>{
-        new Promise(re=>{
-            globalData.teacherclass.forEach(item=>{
-                if(item.classname==name){
-                    showAnime('已有重复班级名！');
+        let getht=new XMLHttpRequest();
+        getht.open('POST',`https://api.weixin.qq.com/tcb/databasequery?access_token=${ACCESS_TOKEN}`,true);
+        let data={
+            "env":"fzuanswersystem-7g3gmzjw761ecfdb",
+            "query":`db.collection(\'class\').where({classname:'${classname}'}).limit(100).get()`
+        };
+        getht.send(JSON.stringify(data));
+        getht.onreadystatechange=e=>{
+            if(getht.readyState==4){
+                let res=JSON.parse(getht.responseText);
+                console.log(res);
+                if(res.data.length>1){
                     samename=true;
-                    re();
+                    resolve();
                 }
-                count--;
-            });
-            if(count==0)    re();
-        }).then(()=>{
-            resolve();
-        })
+            }
+        }
     })
 }
 function addClassToServer(newid,newname){
@@ -329,9 +325,7 @@ function loadUnitQuestions(){
                 Object.keys(info).forEach(function(i){
                     let newnode=document.createElement('div');
                     newnode.classList.add('a-homework');
-                    let id=document.createAttribute('id');
-                    id.value=i;
-                    newnode.setAttributeNode(id);
+                    newnode.id=i;
                     newnode.innerHTML=`<div class="homework-title">
                         <h3 class="showQuestions" onclick="showQuestions('${i}','${info[i].questions}')">${i}</h3>
                         <button class="addhomework-btn" onclick="addHomework('${i}','${classid}')">添加作业</button>
@@ -353,14 +347,12 @@ var FALSEIMG="https://667a-fzuanswersystem-7g3gmzjw761ecfdb-1305763704.tcb.qclou
 function showQuestions(key,homework){
     // ${}占位符会把数组转成字符串
     hideAllHomework();
-    console.log(homework);
     let arr=homework.split(',');
     let div=document.getElementById(key);
     for(let j=0;j<arr.length;j++){
         let qnode=document.createElement('div');    // 该单元所有作业
         getQuestion(arr[j]).then(res=>{
             res=JSON.parse(res);
-            console.log(res);
             let type=(res.type=='fillblack'?'填空题':'单选题');
             if(res.choosenum>1) type='多选题';
             let levelobj={
@@ -379,7 +371,6 @@ function showQuestions(key,homework){
                         "max_age":72000
                     }]
                 };
-                console.log(JSON.stringify(data3));
                 ht2.send(JSON.stringify(data3));
                 ht2.onreadystatechange=e=>{
                     if(ht2.readyState==4){
@@ -391,7 +382,8 @@ function showQuestions(key,homework){
                             <div class="workdata" onclick="showStudentWork('${res._id}')">
                                 <div class="workdata-title">
                                     <p>${type}</p>
-                                    <p>${levelobj[res.level]}</p>                
+                                    <p>${levelobj[res.level]}</p>
+                                    <button class="deletebtn" onclick="deleteQuestion('${res._id}','${res.classname}')">删除题目</button>
                                 </div>
                                 <div class="workdata-content">
                                     <p>问题：${res.content}</p>
@@ -415,6 +407,7 @@ function showQuestions(key,homework){
                                     <img class="right-icon" src=${img} />
                                 </div>`
                             }
+                            qnode.id='q'+res._id;
                             qnode.appendChild(block);
                             div.append(qnode);
                         }
@@ -425,7 +418,8 @@ function showQuestions(key,homework){
                 <div class="workdata" onclick="showStudentWork('${res._id}')">
                     <div class="workdata-title">
                         <p>${type}</p>
-                        <p>${levelobj[res.level]}</p>                
+                        <p>${levelobj[res.level]}</p>
+                        <button class="deletebtn" onclick="deleteQuestion('${res._id}','${res.classname}')" >删除题目</button>             
                     </div>
                     <div class="workdata-content">
                         <p>问题：${res.content}</p>
@@ -448,6 +442,7 @@ function showQuestions(key,homework){
                         <img class="right-icon" src=${img} />
                     </div>`
                 }
+                qnode.id='q'+res._id;
                 qnode.appendChild(block);
                 div.append(qnode);
             }
@@ -461,6 +456,51 @@ function showStudentWork(id){
         node.classList.remove('is-shown');
     }else{
         node.classList.add('is-shown');
+    }
+}
+// 删除问题
+function deleteQuestion(id,classname){
+    // 不处理学生已做过情况
+    if(confirm('确认删除？')){
+        // 删quesitons
+        let http=new XMLHttpRequest();
+        http.open("POST",`https://api.weixin.qq.com/tcb/databasedelete?access_token=${ACCESS_TOKEN}`);
+        let data={
+            "env":"fzuanswersystem-7g3gmzjw761ecfdb",
+            "query": `db.collection(\"questions\").doc('${id}').remove()`
+        };
+        http.send(JSON.stringify(data));
+        http.onreadystatechange=e=>{
+            if(http.readyState==4){
+                let res=JSON.parse(http.responseText);
+                if(res.errcode==0){
+                    // 删class
+                    let http2=new XMLHttpRequest();
+                    http2.open('POST',`https://api.weixin.qq.com/tcb/databaseupdate?access_token=${ACCESS_TOKEN}`);
+                    let newdata=classinfo;
+                    let quesnode=document.getElementById('q'+id);   // 要删除问题节点
+                    let father=quesnode.parentNode;
+                    newdata[father.id].questions=newdata[father.id].questions.filter(function(i){
+                        return i!=id;
+                    });
+                    let data={
+                        "env":"fzuanswersystem-7g3gmzjw761ecfdb",
+                        "query":`db.collection(\"class\").where({classname:'${classname}'}).update({data:{homework:${JSON.stringify(newdata)}}})`
+                    }
+                    http2.send(JSON.stringify(data));
+                    http2.onreadystatechange=e=>{
+                        if(http2.readyState==4){
+                            let res=JSON.parse(http2.responseText);
+                            console.log(res);
+                            if(res.errcode==0){
+                                showAnime('删除成功！');
+                                father.removeChild(quesnode);
+                            }
+                        }
+                    }
+                }
+            }            
+        }
     }
 }
 function hideAllHomework(){
