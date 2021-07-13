@@ -42,28 +42,30 @@ function getClassInfo(classid){
                             let unitc=info.homework[unit].questions.length;
                             let unitscore=0;
                             new Promise(resolve=>{
-                                if(info.homework[unit].questions.length==0) resolve();
-                                info.homework[unit].questions.forEach(q=>{
-                                    let h=new XMLHttpRequest();
-                                    h.open("POST",`https://api.weixin.qq.com/tcb/databasequery?access_token=${ACCESS_TOKEN}`);
-                                    let data={
-                                        "env":"fzuanswersystem-7g3gmzjw761ecfdb",
-                                        "query":`db.collection(\'questions\').doc('${q}').get()`
-                                    };
-                                    h.send(JSON.stringify(data));
-                                    h.onreadystatechange=e=>{
-                                        if(h.readyState==4){
-                                            let res=JSON.parse(h.responseText);
-                                            if(res.data.length>0){
-                                                let d=JSON.parse(res.data[0]);
-                                                unitscore+=parseInt(d.point);
-                                                if(--unitc==0){
-                                                    resolve();
-                                                }
-                                            }
-                                        }
-                                    }
-                                })                            
+                                unitscore=info.homework[unit].score;
+                                resolve();
+                                // if(info.homework[unit].questions.length==0) resolve();
+                                // info.homework[unit].questions.forEach(q=>{
+                                //     let h=new XMLHttpRequest();
+                                //     h.open("POST",`https://api.weixin.qq.com/tcb/databasequery?access_token=${ACCESS_TOKEN}`);
+                                //     let data={
+                                //         "env":"fzuanswersystem-7g3gmzjw761ecfdb",
+                                //         "query":`db.collection(\'questions\').doc('${q}').get()`
+                                //     };
+                                //     h.send(JSON.stringify(data));
+                                //     h.onreadystatechange=e=>{
+                                //         if(h.readyState==4){
+                                //             let res=JSON.parse(h.responseText);
+                                //             if(res.data.length>0){
+                                //                 let d=JSON.parse(res.data[0]);
+                                //                 unitscore+=parseInt(d.point);
+                                //                 if(--unitc==0){
+                                //                     resolve();
+                                //                 }
+                                //             }
+                                //         }
+                                //     }
+                                // })
                             }).then(()=>{
                                 // 保证顺序
                                 unitObj[unit]=unitscore;
@@ -102,8 +104,11 @@ function getClassInfo(classid){
                                 stuhttp.send(JSON.stringify(data));
                                 stuhttp.onreadystatechange=e=>{
                                     if(stuhttp.readyState==4){
-                                        let stinfo=JSON.parse(JSON.parse(stuhttp.responseText).data[0]);
-                                        stuarray.push(stinfo);
+                                        console.log(stuhttp.responseText);
+                                        if(JSON.parse(stuhttp.responseText).data.length>0){
+                                            let stinfo=JSON.parse(JSON.parse(stuhttp.responseText).data[0]);
+                                            stuarray.push(stinfo);                                            
+                                        }
                                         resolve();
                                     }
                                 }                            
@@ -129,7 +134,7 @@ function getClassInfo(classid){
                                 </div>`;
                                 if(JSON.stringify(stuarray[i].score)!="{}"){
                                     Object.keys(stuarray[i].score).forEach(item=>{
-                                        newnode.firstChild.innerHTML+=`<p class="pwidth">${stuarray[i].score[item].score}分</p>`
+                                        newnode.firstChild.innerHTML+=`<p class="pwidth">${stuarray[i].score[item].score}</p>`
                                     });
                                 }
                                 studentinfo.appendChild(newnode);
@@ -210,7 +215,6 @@ function isSameId(id){
         get.onreadystatechange=e=>{
             if(get.readyState==4){
                 let res=JSON.parse(get.responseText);
-                console.log(res);
                 if(res.data.length>0){
                     showAnime('该班级编号已被占用！');
                     sameid=true;                    
@@ -228,17 +232,17 @@ function isSameName(name){
         getht.open('POST',`https://api.weixin.qq.com/tcb/databasequery?access_token=${ACCESS_TOKEN}`,true);
         let data={
             "env":"fzuanswersystem-7g3gmzjw761ecfdb",
-            "query":`db.collection(\'class\').where({classname:'${classname}'}).limit(100).get()`
+            "query":`db.collection(\'class\').where({classname:'${name}'}).limit(100).get()`
         };
         getht.send(JSON.stringify(data));
         getht.onreadystatechange=e=>{
             if(getht.readyState==4){
                 let res=JSON.parse(getht.responseText);
-                console.log(res);
-                if(res.data.length>1){
+                if(res.data.length>0){
+                    showAnime('该班级名已被占用！');
                     samename=true;
-                    resolve();
                 }
+                resolve();
             }
         }
     })
@@ -250,6 +254,7 @@ function addClassToServer(newid,newname){
             return  ;
         }else{
             isSameName(newname).then(()=>{
+                console.log(1)
                 if(samename){
                     return  ;
                 }else{
